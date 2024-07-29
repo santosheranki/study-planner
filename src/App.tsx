@@ -1,26 +1,25 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-
+import Login from './components/login';
+import Register from './components/Register';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import DashboardComponent from './components/Dashboard';
+import ToastService from './components/Toast';
+import Protected from './protectedroute/protectedRoute';
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <ToastService /> {/* Include the ToastService component */}
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route element={<Protected />}>
+          <Route path="/home" element={<DashboardComponent />} />
+          <Route path="/dashboard" element={<DashboardComponent />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
-
 export default App;
