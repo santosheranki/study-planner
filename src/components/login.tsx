@@ -38,19 +38,24 @@ const Login: React.FC = () => {
             else if (response.data.result === 0 && response.data.message === 'Invalid password') {
                 console.log("invalid passwrod");
                 setinvalidpassword(true);
-                toast.error('Invalid Password, Please re-check');
             }
-
             else {
                 console.error("error");
             }
         } catch (error: any) {
-            console.error('Error logging in:', error.response.data);
+            console.error('Error logging in:', error.response);
             if (error.response.data.result === 0 && error.response.data.message === 'User not found') {
                 console.log("user not found");
                 toast.error('The user ID entered does not exist. Please check the user ID and password');
                 setTimeout(() => {
                     setUsername('');
+                    setPassword('');
+                }, 5000);
+            }
+            if (error.response.data.result === 0 && error.response.data.message === 'Invalid password') {
+                console.log("invalid password");
+                toast.error('Invalid Password, Please re-check');
+                setTimeout(() => {
                     setPassword('');
                 }, 5000);
             }
