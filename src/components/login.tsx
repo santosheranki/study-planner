@@ -4,6 +4,7 @@ import CryptoJS from 'crypto-js';
 import '../../src/login.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 const keyBase64 = 'vI7cGtC3P7FAmG4+jL+VORhxPaF++5FZml+Kv3o4Rsw='; // Your 32-byte key in base64
 const key = CryptoJS.enc.Base64.parse(keyBase64);
 const Login: React.FC = () => {
@@ -29,7 +30,7 @@ const Login: React.FC = () => {
                 username,
                 password, // Send plain text password
             });
-            console.log('Login successful:', response.data);
+            console.log('Login successful:', response);
             if (response.data.result === 1) {
                 navigate('/dashboard');
                 localStorage.setItem('userid', response.data.userID);
@@ -37,12 +38,22 @@ const Login: React.FC = () => {
             else if (response.data.result === 0 && response.data.message === 'Invalid password') {
                 console.log("invalid passwrod");
                 setinvalidpassword(true);
+                toast.error('Invalid Password, Please re-check');
             }
+
             else {
                 console.error("error");
             }
-        } catch (error) {
-            console.error('Error logging in:', error);
+        } catch (error: any) {
+            console.error('Error logging in:', error.response.data);
+            if (error.response.data.result === 0 && error.response.data.message === 'User not found') {
+                console.log("user not found");
+                toast.error('The user ID entered does not exist. Please check the user ID and password');
+                setTimeout(() => {
+                    setUsername('');
+                    setPassword('');
+                }, 5000);
+            }
         }
     };
     const togglePasswordVisibility = () => {
