@@ -10,18 +10,21 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import Headercomponent from './Header';
 const localizer = momentLocalizer(moment);
+
 interface Event {
     title: string;
     start: Date;
     end: Date;
     category?: string;
 }
+
 const CalendarComponent: React.FC = () => {
     const [eventsData, setEventsData] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [categories, setCategories] = useState<{ title: string; categoryid: number }[]>([]);
     const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '' });
-    const [individualcard, setIndividualCard] = useState();
+    const [individualcard, setIndividualCard] = useState<any | null>(null);
+
     const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
         const formatDate = (date: Date) => {
             const year = date.getFullYear();
@@ -31,25 +34,36 @@ const CalendarComponent: React.FC = () => {
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         };
+
         setNewEvent({
             title: '',
             start: formatDate(start),
             end: formatDate(end),
             category: ''
         });
+        setIndividualCard(null);
         setShowModal(true);
     };
-    const handleindividualcard = async () => {
+
+    const handleindividualcard = async (event: any) => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
-        const calid = eventsData[0].calendarId
+        const calid = event.calendarId;
         const response: any = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`);
-        console.log("responseeeeee", response.data)
-        setIndividualCard(response.data);
-    }
+        setIndividualCard(response.data[0]);
+        setNewEvent({
+            title: response.data[0].title,
+            start: response.data[0].start.split('T')[0] + 'T' + response.data[0].start.split('T')[1],
+            end: response.data[0].end.split('T')[0] + 'T' + response.data[0].end.split('T')[1],
+            category: response.data[0].category.toString(),
+        });
+        setShowModal(true);
+    };
+
     useEffect(() => {
         handleGetCategoryTypes();
         fetchScheduledEvents();
     }, []);
+
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
         try {
@@ -63,6 +77,7 @@ const CalendarComponent: React.FC = () => {
             console.error('Error fetching categories:', error.response);
         }
     };
+
     const fetchScheduledEvents = async () => {
         const userid = localStorage.getItem('userid');
         try {
@@ -81,6 +96,7 @@ const CalendarComponent: React.FC = () => {
             console.error('Error fetching scheduled events:', error.response);
         }
     };
+
     const handleSave = async (values: any) => {
         const userid = localStorage.getItem('userid');
         const payload = {
@@ -92,7 +108,20 @@ const CalendarComponent: React.FC = () => {
             ActiveFlag: 1,
         };
         const { title, start, end } = values;
-        setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
+
+        // If editing an existing event, update it
+        if (individualcard) {
+            const updatedEvents = eventsData.map(event =>
+                event.calendarId === individualcard.calendarId
+                    ? { ...event, title, start: new Date(start), end: new Date(end) }
+                    : event
+            );
+            setEventsData(updatedEvents);
+        } else {
+            // Otherwise, add a new event
+            setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
+        }
+
         setShowModal(false);
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/addcalendar`, payload);
@@ -104,6 +133,7 @@ const CalendarComponent: React.FC = () => {
             console.error('Error adding event:', error);
         }
     };
+
     return (
         <>
             <Headercomponent />
@@ -132,7 +162,6 @@ const CalendarComponent: React.FC = () => {
     );
 };
 const EventModal = ({ show, handleClose, handleSave, newEvent, categories, individualcard }: any) => {
-    console.log("indivdualcard", individualcard[0])
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
         start: Yup.date().required('Start date and time are required'),
@@ -144,11 +173,12 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
     return (
         <Modal show={show} onHide={handleClose}>
             <Modal.Header closeButton>
-                <Modal.Title>Add New Event</Modal.Title>
+                <Modal.Title>{individualcard ? 'Edit Event' : 'Add New Event'}</Modal.Title>
             </Modal.Header>
             <Formik
                 initialValues={newEvent}
                 validationSchema={validationSchema}
+                enableReinitialize
                 onSubmit={(values, { resetForm }) => {
                     handleSave(values);
                     resetForm();
