@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-import events from './Events';
-import Headercomponent from './Header';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Field, Form as FormikForm } from 'formik';
@@ -10,12 +8,20 @@ import * as Yup from 'yup';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import Headercomponent from './Header';
 const localizer = momentLocalizer(moment);
-const CalendarComponent = () => {
-    const [eventsData, setEventsData] = useState(events);
+interface Event {
+    title: string;
+    start: Date;
+    end: Date;
+    category?: string;
+}
+const CalendarComponent: React.FC = () => {
+    const [eventsData, setEventsData] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
-    const [categories, setCategories] = useState<string[]>([]);
+    const [categories, setCategories] = useState<{ title: string; categoryid: number }[]>([]);
     const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '' });
+    const [individualcard, setIndividualCard] = useState();
     const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
         const formatDate = (date: Date) => {
             const year = date.getFullYear();
@@ -28,13 +34,21 @@ const CalendarComponent = () => {
         setNewEvent({
             title: '',
             start: formatDate(start),
-            end: '',
+            end: formatDate(end),
             category: ''
         });
         setShowModal(true);
     };
+    const handleindividualcard = async () => {
+        const uuidfromlocalstorage = localStorage.getItem('userid');
+        const calid = eventsData[0].calendarId
+        const response: any = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`);
+        console.log("responseeeeee", response.data)
+        setIndividualCard(response.data);
+    }
     useEffect(() => {
         handleGetCategoryTypes();
+        fetchScheduledEvents();
     }, []);
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
@@ -49,6 +63,24 @@ const CalendarComponent = () => {
             console.error('Error fetching categories:', error.response);
         }
     };
+    const fetchScheduledEvents = async () => {
+        const userid = localStorage.getItem('userid');
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${userid}`);
+            if (response && response.data) {
+                const fetchedEvents = response.data.map((event: any) => ({
+                    title: event.title,
+                    start: new Date(event.start),
+                    end: new Date(event.end),
+                    category: event.category,
+                    calendarId: event.calendarId
+                }));
+                setEventsData(fetchedEvents);
+            }
+        } catch (error: any) {
+            console.error('Error fetching scheduled events:', error.response);
+        }
+    };
     const handleSave = async (values: any) => {
         const userid = localStorage.getItem('userid');
         const payload = {
@@ -56,22 +88,20 @@ const CalendarComponent = () => {
             title: values.title.toString(),
             start: values.start.toString(),
             end: values.end.toString(),
-            uuid: userid?.toString()
-        }
+            uuid: userid?.toString(),
+            ActiveFlag: 1,
+        };
         const { title, start, end } = values;
         setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
         setShowModal(false);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/addcalendar',
-                payload
-            );
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/addcalendar`, payload);
             if (response.data.result === 1) {
-                toast.success("Yay! Calendar Scheduled")
+                toast.success("Yay! Calendar Scheduled");
+                fetchScheduledEvents();
             }
-            console.log("response", response, response.data)
-            console.log('Register response:', response.data);
         } catch (error) {
-            console.error('Error registering user:', error);
+            console.error('Error adding event:', error);
         }
     };
     return (
@@ -86,7 +116,7 @@ const CalendarComponent = () => {
                     defaultView="month"
                     events={eventsData}
                     style={{ height: "100vh" }}
-                    onSelectEvent={(event) => alert(event.title)}
+                    onSelectEvent={handleindividualcard}
                     onSelectSlot={handleSelect}
                 />
                 <EventModal
@@ -95,12 +125,14 @@ const CalendarComponent = () => {
                     handleSave={handleSave}
                     newEvent={newEvent}
                     categories={categories}
+                    individualcard={individualcard}
                 />
             </div>
         </>
     );
 };
-const EventModal = ({ show, handleClose, handleSave, newEvent, categories }: any) => {
+const EventModal = ({ show, handleClose, handleSave, newEvent, categories, individualcard }: any) => {
+    console.log("indivdualcard", individualcard[0])
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
         start: Yup.date().required('Start date and time are required'),
@@ -143,7 +175,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories }: any
                                     isInvalid={touched.category && !!errors.category}
                                 >
                                     <option value="" label="Select category" />
-                                    {categories.map((category: any, index: number) => (
+                                    {categories.map((category: any, index: any) => (
                                         <option key={index} value={category.categoryid} label={category.title} />
                                     ))}
                                 </Field>
