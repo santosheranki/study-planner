@@ -7,24 +7,22 @@ import { Formik, Field, Form as FormikForm } from 'formik';
 import * as Yup from 'yup';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
+import '../../src/components/CalendarTask.css'
 import { toast } from 'react-toastify';
 import Headercomponent from './Header';
 const localizer = momentLocalizer(moment);
-
 interface Event {
     title: string;
     start: Date;
     end: Date;
     category?: string;
 }
-
 const CalendarComponent: React.FC = () => {
     const [eventsData, setEventsData] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [categories, setCategories] = useState<{ title: string; categoryid: number }[]>([]);
     const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '' });
     const [individualcard, setIndividualCard] = useState<any | null>(null);
-
     const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
         const formatDate = (date: Date) => {
             const year = date.getFullYear();
@@ -34,7 +32,6 @@ const CalendarComponent: React.FC = () => {
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${year}-${month}-${day}T${hours}:${minutes}`;
         };
-
         setNewEvent({
             title: '',
             start: formatDate(start),
@@ -44,7 +41,6 @@ const CalendarComponent: React.FC = () => {
         setIndividualCard(null);
         setShowModal(true);
     };
-
     const handleindividualcard = async (event: any) => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
         const calid = event.calendarId;
@@ -58,12 +54,10 @@ const CalendarComponent: React.FC = () => {
         });
         setShowModal(true);
     };
-
     useEffect(() => {
         handleGetCategoryTypes();
         fetchScheduledEvents();
     }, []);
-
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
         try {
@@ -77,7 +71,6 @@ const CalendarComponent: React.FC = () => {
             console.error('Error fetching categories:', error.response);
         }
     };
-
     const fetchScheduledEvents = async () => {
         const userid = localStorage.getItem('userid');
         try {
@@ -118,7 +111,6 @@ const CalendarComponent: React.FC = () => {
         } else {
             setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
         }
-
         setShowModal(false);
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/addcalendar`, payload);
@@ -130,7 +122,6 @@ const CalendarComponent: React.FC = () => {
             console.error('Error adding event:', error);
         }
     };
-
     return (
         <>
             <Headercomponent />
@@ -141,6 +132,7 @@ const CalendarComponent: React.FC = () => {
                     localizer={localizer}
                     defaultDate={new Date()}
                     defaultView="month"
+                    views={['month', 'week', 'day']}
                     events={eventsData}
                     style={{ height: "100vh" }}
                     onSelectEvent={handleindividualcard}
@@ -152,13 +144,31 @@ const CalendarComponent: React.FC = () => {
                     handleSave={handleSave}
                     newEvent={newEvent}
                     categories={categories}
+                    handleFetchEvents={fetchScheduledEvents}
                     individualcard={individualcard}
                 />
             </div>
         </>
     );
 };
-const EventModal = ({ show, handleClose, handleSave, newEvent, categories, individualcard }: any) => {
+const EventModal = ({ show, handleClose, handleSave, newEvent, categories, individualcard, handleFetchEvents }: any) => {
+    const handleDelete = async () => {
+        const payload = {
+            uuid: localStorage.getItem('userid')?.toString(),
+            calendarId: individualcard.calendarId,
+        }
+        try {
+            const deletecall = await axios.post(`${process.env.REACT_APP_API_URL}/auth/updateActiveFlag`, payload);
+            if (deletecall.data.result === 1) {
+                toast.success("Calendar Deleted Successfully");
+                handleClose();
+                handleFetchEvents();
+            }
+        } catch (error: any) {
+            toast.error("Uh-oh something went wrong. Please try again!")
+            console.error('Error fetching categories:', error.message);
+        }
+    }
     console.log("individual card", individualcard)
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
@@ -230,10 +240,18 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                 <Form.Control.Feedback type="invalid">{errors.end}</Form.Control.Feedback>
                             </Form.Group>
                         </Modal.Body>
+                        {individualcard && (
+                            <label className="colorlight"><span className='text-danger'>*</span> Please Note Delete action is an Irreversible action.</label>
+                        )}
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleClose}>
                                 Close
                             </Button>
+                            {individualcard && (
+                                <Button variant="danger" onClick={() => handleDelete()}>
+                                    Delete
+                                </Button>
+                            )}
                             <Button variant="primary" type="submit">
                                 Save Changes
                             </Button>
