@@ -1,0 +1,75 @@
+.table {
+    margin-bottom: 2rem;
+}
+
+/* Center pagination */
+.pagination {
+    justify-content: center;
+}
+
+/* Badge transitions */
+.badge.bg-success {
+    background-color: #28a745;
+    transition: background-color 0.3s ease;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545;
+    transition: background-color 0.3s ease;
+}
+
+.badge:hover {
+    opacity: 0.9;
+}
+
+/* Table row fade-in effect */
+.animated-table {
+    transition: all 0.3s ease;
+}
+
+.fade-in-row {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Badge scaling effect */
+.animated-badge {
+    transition: transform 0.3s ease;
+}
+
+.animated-badge:hover {
+    transform: scale(1.1);
+}
+
+/* Dropdown menu opacity transition */
+.animated-dropdown .dropdown-toggle {
+    transition: background-color 0.3s ease;
+}
+
+.animated-dropdown .dropdown-menu {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.animated-dropdown:hover .dropdown-menu {
+    opacity: 1;
+}
+
+/* Pagination item transition */
+.pagination-custom .page-item {
+    transition: background-color 0.3s ease;
+}
+
+.pagination-custom .page-item.active {
+    background-color: #007bff;
+    color: white;
+}

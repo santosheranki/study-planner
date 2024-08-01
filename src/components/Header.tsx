@@ -11,10 +11,13 @@ const Headercomponent = () => {
         <>
             <Nav className='background justify-content-end'>
                 <Nav.Item>
-                    <Nav.Link href="/home" className='text-white'>Active</Nav.Link>
+                    <Nav.Link href="/dashboard" className='text-white'>Home</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="link-1" className='text-white'>Link</Nav.Link>
+                    <Nav.Link eventKey="link-1" href="/task" className='text-white'>Schedule Task</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                    <Nav.Link href="/categories" eventKey="link-1" className='text-white'>Categories</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                     <Nav.Link eventKey="link-2" className='text-white' onClick={handlelogout}>Logout</Nav.Link>
