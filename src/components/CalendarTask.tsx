@@ -96,7 +96,6 @@ const CalendarComponent: React.FC = () => {
             console.error('Error fetching scheduled events:', error.response);
         }
     };
-
     const handleSave = async (values: any) => {
         const userid = localStorage.getItem('userid');
         const payload = {
@@ -105,11 +104,10 @@ const CalendarComponent: React.FC = () => {
             start: values.start.toString(),
             end: values.end.toString(),
             uuid: userid?.toString(),
+            calendarId: individualcard ? individualcard?.calendarId : '',
             ActiveFlag: 1,
         };
         const { title, start, end } = values;
-
-        // If editing an existing event, update it
         if (individualcard) {
             const updatedEvents = eventsData.map(event =>
                 event.calendarId === individualcard.calendarId
@@ -118,7 +116,6 @@ const CalendarComponent: React.FC = () => {
             );
             setEventsData(updatedEvents);
         } else {
-            // Otherwise, add a new event
             setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
         }
 
@@ -162,6 +159,7 @@ const CalendarComponent: React.FC = () => {
     );
 };
 const EventModal = ({ show, handleClose, handleSave, newEvent, categories, individualcard }: any) => {
+    console.log("individual card", individualcard)
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
         start: Yup.date().required('Start date and time are required'),
