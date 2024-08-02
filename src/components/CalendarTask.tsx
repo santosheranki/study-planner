@@ -24,6 +24,11 @@ const CalendarComponent: React.FC = () => {
     const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '' });
     const [individualcard, setIndividualCard] = useState<any | null>(null);
     const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
+        const now = new Date();
+        if (start < now) {
+            toast.error("You cannot select past dates.");
+            return;
+        }
         const formatDate = (date: Date) => {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');

@@ -1,54 +1,66 @@
 import { useEffect, useState } from 'react';
 import Headercomponent from './Header';
-import '../../src/components/Categories.css'
-import { Table, Pagination, Dropdown, Button, Form } from 'react-bootstrap';
+import '../../src/components/Categories.css';
+import { Table, Pagination, Form } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 const CategoriesComponent = () => {
-    const [items, setItems] = useState(generateItems(20));
+    const [items, setItems] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(8);
-    let title: any
-    function generateItems(count: any) {
-        return Array.from({ length: count }, (_, index) => ({
-            id: index + 1,
-            dateCreated: `2024-07-${String(index % 30 + 1).padStart(2, '0')}`,
-            username: localStorage.getItem('userwelcomename'),
-            category: `Category${(index % 5) + 1}`,
-            tasktitle: `Category${(index % 5) + 1}`,
-            status: index % 2 === 0 ? 'active' : 'closed',
-        }));
-    }
-    const indexOfLastItem = currentPage * recordsPerPage;
-    const indexOfFirstItem = indexOfLastItem - recordsPerPage;
-    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(items.length / recordsPerPage);
-    const handlePageChange = (pageNumber: any) => setCurrentPage(pageNumber);
-    const handleRecordsPerPageChange = (e: any) => setRecordsPerPage(Number(e.target.value));
     const location = useLocation();
     const pathname = location.pathname;
     const uuidfromlocalstorage = localStorage.getItem('userid');
     useEffect(() => {
-        handleLogin();
-    })
-    const handleLogin = async () => {
+        handlegetcategories();
+    }, []);
+    const handlegetcategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories/${uuidfromlocalstorage}`, {
-            });
-            if (response) {
-                console.log("if condition entered in response", response.data);
-                title = response.data.map((item: { title: any; }) => item.title)
-                console.log("santosh", title)
-            }
-            console.log('Login successful:', response);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories/${uuidfromlocalstorage}`);
+            const tablecategories = await response.data.map(({ categoryid, title }: any) => ({
+                categoryid,
+                title
+            }));
+            handleLogin(tablecategories)
         } catch (error: any) {
-            console.error('Error logging in:', error.response);
+            console.error("Error fetching categories", error.message)
+        }
+    }
+    const getCategoryTitle = (categoryId: any, categoriesList: Array<any>) => {
+        const category = categoriesList.find(cat => cat.categoryid === categoryId);
+        return category ? category.title : 'dddssss';
+    };
+    const handleLogin = async (categoriesList: Array<any>) => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/gettabletasks/${uuidfromlocalstorage}`);
+            if (response && response.data) {
+                const fetchedItems = response.data.map((item: any) => ({
+                    id: item._id,
+                    dateCreated: new Date(item.createdDate).toLocaleDateString(),
+                    scheduledDate: new Date(item.start).toLocaleDateString() + ' ' + new Date(item.start).toLocaleTimeString(),
+                    taskTitle: item.title,
+                    category: getCategoryTitle(item.category, categoriesList),
+                    status: item.ActiveFlag === 1 ? 'Active' : 'Closed',
+                }));
+                setItems(fetchedItems);
+            }
+        } catch (error: any) {
+            console.error('Error fetching tasks:', error.response);
         }
     };
+    const indexOfLastItem = currentPage * recordsPerPage;
+    const indexOfFirstItem = indexOfLastItem - recordsPerPage;
+    const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(items.length / recordsPerPage);
+    const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber);
+    const handleRecordsPerPageChange = (e: any) => {
+        setRecordsPerPage(Number(e.target.value));
+    };
     return (
-        <>{pathname === '/dashboard' ? '' : <Headercomponent />}
+        <>
+            {pathname === '/dashboard' ? '' : <Headercomponent />}
             <div className="container-fluid">
-                <h2 className="mb-4">List of Categories</h2>
+                <h2 className="mb-4">List of Tasks</h2>
                 <Form.Group controlId="recordsPerPage">
                     <Form.Label>Records Per Page</Form.Label>
                     <Form.Control as="select" value={recordsPerPage} onChange={handleRecordsPerPageChange}>
@@ -62,9 +74,9 @@ const CategoriesComponent = () => {
                     <thead>
                         <tr>
                             <th>Date Created</th>
-                            <th>Username</th>
-                            <th>Category</th>
+                            <th>Scheduled Date</th>
                             <th>Task Title</th>
+                            <th>Category</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -72,12 +84,12 @@ const CategoriesComponent = () => {
                         {currentItems.map(item => (
                             <tr key={item.id} className="fade-in-row">
                                 <td>{item.dateCreated}</td>
-                                <td>{item.username}</td>
+                                <td>{item.scheduledDate}</td>
+                                <td>{item.taskTitle}</td>
                                 <td>{item.category}</td>
-                                <td>{item.tasktitle}</td>
                                 <td>
-                                    <span className={`badge ${item.status === 'active' ? 'bg-success' : 'bg-danger'}`}>
-                                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                    <span className={`badge ${item.status === 'Active' ? 'bg-success' : 'bg-danger'}`}>
+                                        {item.status}
                                     </span>
                                 </td>
                             </tr>
@@ -95,7 +107,8 @@ const CategoriesComponent = () => {
                         </Pagination.Item>
                     ))}
                 </Pagination>
-            </div></>
+            </div>
+        </>
     );
 };
 export default CategoriesComponent;
