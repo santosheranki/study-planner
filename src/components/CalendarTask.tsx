@@ -66,7 +66,7 @@ const CalendarComponent: React.FC = () => {
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories/${userid}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories`);
             if (response && response.data) {
                 const categoriesList = response.data.map(({ title, categoryid }: any) => ({ title, categoryid }));
                 localStorage.setItem('categories', JSON.stringify(categoriesList));
@@ -165,7 +165,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
         try {
             const deletecall = await axios.post(`${process.env.REACT_APP_API_URL}/auth/updateActiveFlag`, payload);
             if (deletecall.data.result === 1) {
-                toast.success("Calendar Deleted Successfully");
+                toast.success("Yay! You have completed a task!");
                 handleClose();
                 handleFetchEvents();
             }
@@ -246,15 +246,15 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                             </Form.Group>
                         </Modal.Body>
                         {individualcard && (
-                            <label className="colorlight"><span className='text-danger'>*</span> Please Note Delete action is an Irreversible action.</label>
+                            <label className="colorlight"><span className='text-danger'>*</span> Please Note Mark as complete action is an Irreversible action.</label>
                         )}
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleClose}>
                                 Close
                             </Button>
                             {individualcard && (
-                                <Button variant="danger" onClick={() => handleDelete()}>
-                                    Delete
+                                <Button variant="success" onClick={() => handleDelete()}>
+                                    Mark as Completed
                                 </Button>
                             )}
                             <Button variant="primary" type="submit">
