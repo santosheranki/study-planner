@@ -16,7 +16,7 @@ const CategoriesComponent = () => {
     }, []);
     const handlegetcategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories/${uuidfromlocalstorage}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories`);
             const tablecategories = await response.data.map(({ categoryid, title }: any) => ({
                 categoryid,
                 title
@@ -40,7 +40,7 @@ const CategoriesComponent = () => {
                     scheduledDate: new Date(item.start).toLocaleDateString() + ' ' + new Date(item.start).toLocaleTimeString(),
                     taskTitle: item.title,
                     category: getCategoryTitle(item.category, categoriesList),
-                    status: item.ActiveFlag === 1 ? 'Active' : 'Closed',
+                    status: item.ActiveFlag === 1 ? 'Active' : 'Completed',
                 }));
                 setItems(fetchedItems);
             }
