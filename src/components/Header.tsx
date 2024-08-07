@@ -14,7 +14,7 @@ const Headercomponent = () => {
                     <Nav.Link href="/dashboard" className='text-white'>Home</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                    <Nav.Link eventKey="link-1" href="/task" className='text-white'>Schedule A Task</Nav.Link>
+                    <Nav.Link eventKey="link-1" href="/task" className='text-white'>Manage Tasks</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
                     <Nav.Link href="/categories" eventKey="link-1" className='text-white'>Categories</Nav.Link>

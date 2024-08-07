@@ -25,6 +25,16 @@ const DashboardComponent = () => {
                 console.error('Error fetching categories count:', error);
             }
         };
+        const getscheduledcalendar = async () => {
+            try {
+                const uuidfromlocalstorage = localStorage.getItem('userid');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${uuidfromlocalstorage}`);
+                console.log("responseindashboard", response.data);
+            } catch (error: any) {
+                console.error("Error fetching Active Calendars", error.message);
+            }
+        }
+        getscheduledcalendar();
         fetchCategoryCount();
     }, []);
 
@@ -63,6 +73,7 @@ const DashboardComponent = () => {
                             onClick={handleCategories}
                             background="#ccadeb"
                             color="yellow"
+                            style={{ cursor: 'pointer' }}
                         />
                         <Card
                             icon="fas fa-calendar-alt"
@@ -79,17 +90,17 @@ const DashboardComponent = () => {
     );
 };
 
-const Card = ({ title, count, color, background, onClick }: any) => {
+const Card = ({ title, count, color, background, onClick, style }: any) => {
     return (
         <div className="col-md-3">
             <div
                 className={`card mb-4 shadow-sm bg-${color}`}
-                style={{ backgroundColor: background }}
+                style={{ backgroundColor: background, ...style }}
                 onClick={onClick}
             >
                 <div className="card-body d-flex align-items-center">
                     <div>
-                        <h5 className="card-title mb-0">{title}</h5>
+                        <h5 className="card-title mb-0" style={{ fontSize: '1em' }}>{title}</h5>
                         <h2 className="card-count">{count}</h2>
                     </div>
                 </div>

@@ -81,6 +81,7 @@ const CalendarComponent: React.FC = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${userid}`);
             if (response && response.data) {
+                console.log("rsp", response, "rsp.data", response.data)
                 const fetchedEvents = response.data.map((event: any) => ({
                     title: event.title,
                     start: new Date(event.start),
@@ -88,10 +89,12 @@ const CalendarComponent: React.FC = () => {
                     category: event.category,
                     calendarId: event.calendarId
                 }));
+                console.log("fetchedEventssssss", fetchedEvents);
                 setEventsData(fetchedEvents);
             }
         } catch (error: any) {
             console.error('Error fetching scheduled events:', error.response);
+            if (error.response.status == 404) setEventsData([])
         }
     };
     const handleSave = async (values: any) => {
