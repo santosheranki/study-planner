@@ -10,7 +10,7 @@ const DashboardComponent = () => {
     const [categoriesCount, setCategoriesCount] = useState(0);
     const [scheduledTasksCount, setScheduledTasksCount] = useState(0);
     const [closedscheduledtasks, setClosedScheduledTasks] = useState(0);
-
+    const [todaysTasksCount, setTodaysTasksCount] = useState(0);
     useEffect(() => {
         const fetchCategoryCount = async () => {
             try {
@@ -29,7 +29,9 @@ const DashboardComponent = () => {
             try {
                 const uuidfromlocalstorage = localStorage.getItem('userid');
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${uuidfromlocalstorage}`);
-                console.log("responseindashboard", response.data);
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
+                setTodaysTasksCount(todayTasks.length);
             } catch (error: any) {
                 console.error("Error fetching Active Calendars", error.message);
             }
@@ -62,7 +64,7 @@ const DashboardComponent = () => {
                         <Card
                             icon="fas fa-calendar-day"
                             title="Today's Scheduled Tasks"
-                            count={20}
+                            count={todaysTasksCount}
                             color="blue"
                             background="#ffcde7"
                         />
