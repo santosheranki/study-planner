@@ -10,7 +10,7 @@ const DashboardComponent = () => {
     const [categoriesCount, setCategoriesCount] = useState(0);
     const [scheduledTasksCount, setScheduledTasksCount] = useState(0);
     const [closedscheduledtasks, setClosedScheduledTasks] = useState(0);
-
+    const [todaysTasksCount, setTodaysTasksCount] = useState(0);
     useEffect(() => {
         const fetchCategoryCount = async () => {
             try {
@@ -25,6 +25,18 @@ const DashboardComponent = () => {
                 console.error('Error fetching categories count:', error);
             }
         };
+        const getscheduledcalendar = async () => {
+            try {
+                const uuidfromlocalstorage = localStorage.getItem('userid');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${uuidfromlocalstorage}`);
+                const today = new Date().toISOString().split('T')[0];
+                const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
+                setTodaysTasksCount(todayTasks.length);
+            } catch (error: any) {
+                console.error("Error fetching Active Calendars", error.message);
+            }
+        }
+        getscheduledcalendar();
         fetchCategoryCount();
     }, []);
 
@@ -52,7 +64,7 @@ const DashboardComponent = () => {
                         <Card
                             icon="fas fa-calendar-day"
                             title="Today's Scheduled Tasks"
-                            count={20}
+                            count={todaysTasksCount}
                             color="blue"
                             background="#ffcde7"
                         />
@@ -63,6 +75,7 @@ const DashboardComponent = () => {
                             onClick={handleCategories}
                             background="#ccadeb"
                             color="yellow"
+                            style={{ cursor: 'pointer' }}
                         />
                         <Card
                             icon="fas fa-calendar-alt"
@@ -79,17 +92,17 @@ const DashboardComponent = () => {
     );
 };
 
-const Card = ({ title, count, color, background, onClick }: any) => {
+const Card = ({ title, count, color, background, onClick, style }: any) => {
     return (
         <div className="col-md-3">
             <div
                 className={`card mb-4 shadow-sm bg-${color}`}
-                style={{ backgroundColor: background }}
+                style={{ backgroundColor: background, ...style }}
                 onClick={onClick}
             >
                 <div className="card-body d-flex align-items-center">
                     <div>
-                        <h5 className="card-title mb-0">{title}</h5>
+                        <h5 className="card-title mb-0" style={{ fontSize: '1em' }}>{title}</h5>
                         <h2 className="card-count">{count}</h2>
                     </div>
                 </div>
