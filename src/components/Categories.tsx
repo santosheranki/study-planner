@@ -12,23 +12,23 @@ const CategoriesComponent = () => {
     const pathname = location.pathname;
     const uuidfromlocalstorage = localStorage.getItem('userid');
     useEffect(() => {
-        handlegetcategories();
+        handleGetCategories();
     }, []);
-    const handlegetcategories = async () => {
+    const handleGetCategories = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories`);
-            const tablecategories = await response.data.map(({ categoryid, title }: any) => ({
+            const tableCategories = await response.data.map(({ categoryid, title }: any) => ({
                 categoryid,
                 title
             }));
-            handleLogin(tablecategories)
+            handleLogin(tableCategories);
         } catch (error: any) {
-            console.error("Error fetching categories", error.message)
+            console.error("Error fetching categories", error.message);
         }
-    }
+    };
     const getCategoryTitle = (categoryId: any, categoriesList: Array<any>) => {
         const category = categoriesList.find(cat => cat.categoryid === categoryId);
-        return category ? category.title : 'dddssss';
+        return category ? category.title : 'Unknown Category';
     };
     const handleLogin = async (categoriesList: Array<any>) => {
         try {
@@ -42,6 +42,7 @@ const CategoriesComponent = () => {
                     category: getCategoryTitle(item.category, categoriesList),
                     status: item.ActiveFlag === 1 ? 'Active' : 'Completed',
                 }));
+                fetchedItems.sort((a: any, b: any) => (a.status === 'Active' ? -1 : 1));
                 setItems(fetchedItems);
             }
         } catch (error: any) {
