@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import Headercomponent from './Header';
 import '../../src/components/Categories.css';
-import { Table, Pagination, Form } from 'react-bootstrap';
+import { Table, Pagination, Form, Placeholder } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 const CategoriesComponent = () => {
     const [items, setItems] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(8);
+    const [loading, setLoading] = useState(true); // Add loading state
     const location = useLocation();
     const pathname = location.pathname;
     const uuidfromlocalstorage = localStorage.getItem('userid');
@@ -44,6 +45,7 @@ const CategoriesComponent = () => {
                 }));
                 fetchedItems.sort((a: any, b: any) => (a.status === 'Active' ? -1 : 1));
                 setItems(fetchedItems);
+                setLoading(false); // Hide loader after data is fetched
             }
         } catch (error: any) {
             console.error('Error fetching tasks:', error.response);
@@ -82,19 +84,32 @@ const CategoriesComponent = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentItems.map(item => (
-                            <tr key={item.id} className="fade-in-row">
-                                <td>{item.dateCreated}</td>
-                                <td>{item.scheduledDate}</td>
-                                <td>{item.taskTitle}</td>
-                                <td>{item.category}</td>
-                                <td>
-                                    <span className={`badge ${item.status === 'Active' ? 'bg-success' : 'bg-danger'}`}>
-                                        {item.status}
-                                    </span>
-                                </td>
-                            </tr>
-                        ))}
+                        {loading ? (
+                            // Render skeleton loaders while loading
+                            [...Array(recordsPerPage)].map((_, idx) => (
+                                <tr key={idx}>
+                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={7} /></Placeholder></td>
+                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={10} /></Placeholder></td>
+                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={6} /></Placeholder></td>
+                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={5} /></Placeholder></td>
+                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={4} /></Placeholder></td>
+                                </tr>
+                            ))
+                        ) : (
+                            currentItems.map(item => (
+                                <tr key={item.id} className="fade-in-row">
+                                    <td>{item.dateCreated}</td>
+                                    <td>{item.scheduledDate}</td>
+                                    <td>{item.taskTitle}</td>
+                                    <td>{item.category}</td>
+                                    <td>
+                                        <span className={`badge ${item.status === 'Active' ? 'bg-success' : 'bg-danger'}`}>
+                                            {item.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </Table>
                 <Pagination className='justify-content-end pagination-custom'>

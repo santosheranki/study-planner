@@ -4,13 +4,14 @@ import '../../src/components/Dashboard.css';
 import CategoriesComponent from './Categories';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { Spinner } from 'react-bootstrap';
 const DashboardComponent = () => {
     const navigate = useNavigate();
     const [categoriesCount, setCategoriesCount] = useState(0);
     const [scheduledTasksCount, setScheduledTasksCount] = useState(0);
     const [closedscheduledtasks, setClosedScheduledTasks] = useState(0);
     const [todaysTasksCount, setTodaysTasksCount] = useState(0);
+    const [loading, setLoading] = useState(true);
     useEffect(() => {
         const fetchCategoryCount = async () => {
             try {
@@ -19,7 +20,7 @@ const DashboardComponent = () => {
                 if (response.data && response.data.categoriescount !== undefined) {
                     setCategoriesCount(response.data.categoriescount);
                     setScheduledTasksCount(response.data.scheduledtaskscount);
-                    setClosedScheduledTasks(response.data.closedscheduledtasks)
+                    setClosedScheduledTasks(response.data.closedscheduledtasks);
                 }
             } catch (error) {
                 console.error('Error fetching categories count:', error);
@@ -35,63 +36,71 @@ const DashboardComponent = () => {
             } catch (error: any) {
                 console.error("Error fetching Active Calendars", error.message);
             }
-        }
-        getscheduledcalendar();
-        fetchCategoryCount();
+        };
+        const loadData = async () => {
+            setLoading(true);
+            await Promise.all([fetchCategoryCount(), getscheduledcalendar()]);
+            setLoading(false);
+        };
+        loadData();
     }, []);
-
     const handleCategories = () => {
         navigate('/categories');
     }
-
     const loggedinUsername = localStorage.getItem('userwelcomename');
-
     return (
         <div>
             <Headercomponent />
-            <div className="dashboard-content">
-                <h1>Welcome {loggedinUsername},</h1>
-                <hr className="divider" />
-                <div className="container-fluid">
-                    <div className="row">
-                        <Card
-                            icon="fas fa-table"
-                            title="Total Categories"
-                            count={categoriesCount}
-                            color="gray"
-                            background="#deffdd"
-                        />
-                        <Card
-                            icon="fas fa-calendar-day"
-                            title="Today's Scheduled Tasks"
-                            count={todaysTasksCount}
-                            color="blue"
-                            background="#ffcde7"
-                        />
-                        <Card
-                            icon="fas fa-calendar-alt"
-                            title="Overall Active Scheduled Tasks"
-                            count={scheduledTasksCount}
-                            onClick={handleCategories}
-                            background="#ccadeb"
-                            color="yellow"
-                            style={{ cursor: 'pointer' }}
-                        />
-                        <Card
-                            icon="fas fa-calendar-alt"
-                            title="Overall Completed Tasks"
-                            count={closedscheduledtasks}
-                            color="yellow"
-                            background="#fcffc8"
-                        />
-                    </div>
-                    <CategoriesComponent />
+            {loading ? (
+                <div className="loader-container">
+                    <Spinner animation="border" role="status" variant="primary">
+                        <span className="visually-hidden">Loading...</span>
+                    </Spinner>
                 </div>
-            </div>
+            ) : (
+                <div className="dashboard-content">
+                    <h1>Welcome {loggedinUsername},</h1>
+                    <hr className="divider" />
+                    <div className="container-fluid">
+                        <div className="row">
+                            <Card
+                                icon="fas fa-table"
+                                title="Total Categories"
+                                count={categoriesCount}
+                                color="gray"
+                                background="#deffdd"
+                            />
+                            <Card
+                                icon="fas fa-calendar-day"
+                                title="Today's Scheduled Tasks"
+                                count={todaysTasksCount}
+                                color="blue"
+                                background="#ffcde7"
+                            />
+                            <Card
+                                icon="fas fa-calendar-alt"
+                                title="Overall Active Scheduled Tasks"
+                                count={scheduledTasksCount}
+                                onClick={handleCategories}
+                                background="#ccadeb"
+                                color="yellow"
+                                style={{ cursor: 'pointer' }}
+                            />
+                            <Card
+                                icon="fas fa-calendar-alt"
+                                title="Overall Completed Tasks"
+                                count={closedscheduledtasks}
+                                color="yellow"
+                                background="#fcffc8"
+                            />
+                        </div>
+                        <CategoriesComponent />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
-
 const Card = ({ title, count, color, background, onClick, style }: any) => {
     return (
         <div className="col-md-3">
@@ -110,5 +119,4 @@ const Card = ({ title, count, color, background, onClick, style }: any) => {
         </div>
     );
 };
-
 export default DashboardComponent;
