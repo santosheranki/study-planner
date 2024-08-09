@@ -7,7 +7,7 @@ import { Formik, Field, Form as FormikForm } from 'formik';
 import * as Yup from 'yup';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
-import '../../src/components/CalendarTask.css'
+import '../../src/components/CalendarTask.css';
 import { toast } from 'react-toastify';
 import Headercomponent from './Header';
 const localizer = momentLocalizer(moment);
@@ -16,12 +16,13 @@ interface Event {
     start: Date;
     end: Date;
     category?: string;
+    description?: string;
 }
 const CalendarComponent: React.FC = () => {
     const [eventsData, setEventsData] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [categories, setCategories] = useState<{ title: string; categoryid: number }[]>([]);
-    const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '' });
+    const [newEvent, setNewEvent] = useState({ title: '', start: '', end: '', category: '', description: '' });  // Add description field
     const [individualcard, setIndividualCard] = useState<any | null>(null);
     const handleSelect = ({ start, end }: { start: Date; end: Date }) => {
         const now = new Date();
@@ -41,7 +42,8 @@ const CalendarComponent: React.FC = () => {
             title: '',
             start: formatDate(start),
             end: formatDate(end),
-            category: ''
+            category: '',
+            description: ''
         });
         setIndividualCard(null);
         setShowModal(true);
@@ -56,6 +58,7 @@ const CalendarComponent: React.FC = () => {
             start: response.data[0].start.split('T')[0] + 'T' + response.data[0].start.split('T')[1],
             end: response.data[0].end.split('T')[0] + 'T' + response.data[0].end.split('T')[1],
             category: response.data[0].category.toString(),
+            description: response.data[0].description || ''
         });
         setShowModal(true);
     };
@@ -81,20 +84,19 @@ const CalendarComponent: React.FC = () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${userid}`);
             if (response && response.data) {
-                console.log("rsp", response, "rsp.data", response.data)
                 const fetchedEvents = response.data.map((event: any) => ({
                     title: event.title,
                     start: new Date(event.start),
                     end: new Date(event.end),
                     category: event.category,
-                    calendarId: event.calendarId
+                    calendarId: event.calendarId,
+                    description: event.description || ''  // Add description field
                 }));
-                console.log("fetchedEventssssss", fetchedEvents);
                 setEventsData(fetchedEvents);
             }
         } catch (error: any) {
             console.error('Error fetching scheduled events:', error.response);
-            if (error.response.status == 404) setEventsData([])
+            if (error.response.status === 404) setEventsData([]);
         }
     };
     const handleSave = async (values: any) => {
@@ -106,18 +108,19 @@ const CalendarComponent: React.FC = () => {
             end: values.end.toString(),
             uuid: userid?.toString(),
             calendarId: individualcard ? individualcard?.calendarId : '',
+            description: values.description || '',
             ActiveFlag: 1,
         };
         const { title, start, end } = values;
         if (individualcard) {
             const updatedEvents = eventsData.map(event =>
                 event.calendarId === individualcard.calendarId
-                    ? { ...event, title, start: new Date(start), end: new Date(end) }
+                    ? { ...event, title, start: new Date(start), end: new Date(end), description: values.description }
                     : event
             );
             setEventsData(updatedEvents);
         } else {
-            setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end) }]);
+            setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end), description: values.description }]);
         }
         setShowModal(false);
         try {
@@ -164,7 +167,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
         const payload = {
             uuid: localStorage.getItem('userid')?.toString(),
             calendarId: individualcard.calendarId,
-        }
+        };
         try {
             const deletecall = await axios.post(`${process.env.REACT_APP_API_URL}/auth/updateActiveFlag`, payload);
             if (deletecall.data.result === 1) {
@@ -173,18 +176,18 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                 handleFetchEvents();
             }
         } catch (error: any) {
-            toast.error("Uh-oh something went wrong. Please try again!")
+            toast.error("Uh-oh something went wrong. Please try again!");
             console.error('Error fetching categories:', error.message);
         }
-    }
-    console.log("individual card", individualcard)
+    };
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
         start: Yup.date().required('Start date and time are required'),
         end: Yup.date()
             .required('End date and time are required')
             .min(Yup.ref('start'), 'End date and time cannot be before start date and time'),
-        category: Yup.string().required('Category is required')
+        category: Yup.string().required('Category is required'),
+        description: Yup.string()  // Add validation for description (optional)
     });
     return (
         <Modal show={show} onHide={handleClose}>
@@ -204,7 +207,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                     <FormikForm>
                         <Modal.Body>
                             <Form.Group>
-                                <Form.Label>Event Title</Form.Label>
+                                <Form.Label>Event Title <span className='asterisk'>*</span></Form.Label>
                                 <Field
                                     name="title"
                                     as={Form.Control}
@@ -213,7 +216,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                 <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label>Category</Form.Label>
+                                <Form.Label>Category <span className='asterisk'>*</span></Form.Label>
                                 <Field
                                     name="category"
                                     as="select"
@@ -228,7 +231,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                 <Form.Control.Feedback type="invalid">{errors.category}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label>Start Date & Time</Form.Label>
+                                <Form.Label>Start Date & Time <span className='asterisk'>*</span></Form.Label>
                                 <Field
                                     name="start"
                                     type="datetime-local"
@@ -238,7 +241,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                 <Form.Control.Feedback type="invalid">{errors.start}</Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label>End Date & Time</Form.Label>
+                                <Form.Label>End Date & Time <span className='asterisk'>*</span></Form.Label>
                                 <Field
                                     name="end"
                                     type="datetime-local"
@@ -246,6 +249,17 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                     isInvalid={touched.end && !!errors.end}
                                 />
                                 <Form.Control.Feedback type="invalid">{errors.end}</Form.Control.Feedback>
+                            </Form.Group>
+                            <Form.Group>
+                                <Form.Label>Description</Form.Label>
+                                <Field
+                                    name="description"
+                                    as="textarea"
+                                    className="form-control"
+                                    rows={3}
+                                    isInvalid={touched.description && !!errors.description}
+                                />
+                                <Form.Control.Feedback type="invalid">{errors.description}</Form.Control.Feedback>
                             </Form.Group>
                         </Modal.Body>
                         {individualcard && (

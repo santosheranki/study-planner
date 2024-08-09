@@ -76,8 +76,8 @@ const CategoriesComponent = () => {
                 <Table striped bordered hover responsive>
                     <thead>
                         <tr>
-                            <th>Date Created</th>
-                            <th>Scheduled Date</th>
+                            <th>Task Created Date</th>
+                            <th>Task Scheduled Date</th>
                             <th>Task Title</th>
                             <th>Category</th>
                             <th>Status</th>
