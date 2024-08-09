@@ -34,6 +34,7 @@ const Login: React.FC = () => {
             if (response.data.result === 1) {
                 navigate('/dashboard');
                 localStorage.setItem('userid', response.data.userID);
+                localStorage.setItem('userwelcomename', response.data.userwelcomename);
             }
             else if (response.data.result === 0 && response.data.message === 'Invalid password') {
                 console.log("invalid passwrod");
@@ -45,7 +46,6 @@ const Login: React.FC = () => {
         } catch (error: any) {
             console.error('Error logging in:', error.response);
             if (error.response.data.result === 0 && error.response.data.message === 'User not found') {
-                console.log("user not found");
                 toast.error('The user ID entered does not exist. Please check the user ID and password');
                 setTimeout(() => {
                     setUsername('');
@@ -53,7 +53,6 @@ const Login: React.FC = () => {
                 }, 5000);
             }
             if (error.response.data.result === 0 && error.response.data.message === 'Invalid password') {
-                console.log("invalid password");
                 toast.error('Invalid Password, Please re-check');
                 setTimeout(() => {
                     setPassword('');
@@ -65,8 +64,7 @@ const Login: React.FC = () => {
         setPasswordVisible(!passwordVisible);
     };
     const handleregister = () => {
-        console.log("register clicked");
-        navigate('/register')
+        navigate('/register');
         setPassword('');
         setUsername('');
     }
