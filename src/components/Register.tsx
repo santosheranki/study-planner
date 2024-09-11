@@ -23,7 +23,7 @@ const Register: React.FC = () => {
         const passwords = password;
         const encryptedPassword = encryptPassword(passwords);
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/register', {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, {
                 name: name,
                 username: usernames,
                 password: encryptedPassword

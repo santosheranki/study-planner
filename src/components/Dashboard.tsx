@@ -16,7 +16,7 @@ const DashboardComponent = () => {
         const fetchCategoryCount = async () => {
             try {
                 const uuidfromlocalstorage = localStorage.getItem('userid');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcount/${uuidfromlocalstorage}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`);
                 if (response.data && response.data.categoriescount !== undefined) {
                     setCategoriesCount(response.data.categoriescount);
                     setScheduledTasksCount(response.data.scheduledtaskscount);
@@ -29,7 +29,7 @@ const DashboardComponent = () => {
         const getscheduledcalendar = async () => {
             try {
                 const uuidfromlocalstorage = localStorage.getItem('userid');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getscheduledcalendar/${uuidfromlocalstorage}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${uuidfromlocalstorage}`);
                 const today = new Date().toISOString().split('T')[0];
                 const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
                 setTodaysTasksCount(todayTasks.length);

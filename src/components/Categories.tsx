@@ -17,7 +17,7 @@ const CategoriesComponent = () => {
     }, []);
     const handleGetCategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/getcategories`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`);
             const tableCategories = await response.data.map(({ categoryid, title }: any) => ({
                 categoryid,
                 title
@@ -33,7 +33,7 @@ const CategoriesComponent = () => {
     };
     const handleLogin = async (categoriesList: Array<any>) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/auth/gettabletasks/${uuidfromlocalstorage}`);
+            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/gettabletasks/${uuidfromlocalstorage}`);
             if (response && response.data) {
                 const fetchedItems = response.data.map((item: any) => ({
                     id: item._id,
