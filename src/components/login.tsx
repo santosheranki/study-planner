@@ -31,10 +31,12 @@ const Login: React.FC = () => {
                 password, // Send plain text password
             });
             console.log('Login successful:', response);
-            if (response.data.result === 1) {
+            if (response?.data?.result === 1) {
+                localStorage.setItem('accessToken', response?.data?.accessToken);
+                localStorage.setItem('refreshToken', response?.data?.refreshToken);
                 navigate('/dashboard');
-                localStorage.setItem('userid', response.data.userID);
-                localStorage.setItem('userwelcomename', response.data.userwelcomename);
+                localStorage.setItem('userid', response?.data?.userID);
+                localStorage.setItem('userwelcomename', response?.data?.userwelcomename);
             }
             else if (response.data.result === 0 && response.data.message === 'Invalid password') {
                 console.log("invalid passwrod");
