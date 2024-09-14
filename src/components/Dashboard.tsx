@@ -5,6 +5,7 @@ import CategoriesComponent from './Categories';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Spinner } from 'react-bootstrap';
+import { refreshAccessToken } from '../utils/authUtils';
 const DashboardComponent = () => {
     const navigate = useNavigate();
     const [categoriesCount, setCategoriesCount] = useState(0);
@@ -16,14 +17,20 @@ const DashboardComponent = () => {
         const fetchCategoryCount = async () => {
             try {
                 const uuidfromlocalstorage = localStorage.getItem('userid');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`);
+                const accessToken = localStorage.getItem('accessToken');
+                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`, {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
                 if (response.data && response.data.categoriescount !== undefined) {
                     setCategoriesCount(response.data.categoriescount);
                     setScheduledTasksCount(response.data.scheduledtaskscount);
                     setClosedScheduledTasks(response.data.closedscheduledtasks);
                 }
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching categories count:', error);
+                if (error.response && error.response.status === 403) {
+                    await refreshAccessToken();
+                }
             }
         };
         const getscheduledcalendar = async () => {
