@@ -73,3 +73,15 @@
     background-color: #007bff;
     color: white;
 }
+
+.btncolors {
+    background-color: #775AD6 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
+}
+
+.btncolors:hover {
+    background-color: #f5f2ff !important;
+    color: #775AD6 !important;
+    border: 1px solid #775AD6 !important;
+}
