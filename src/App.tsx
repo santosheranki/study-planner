@@ -7,6 +7,7 @@ import ToastService from './components/Toast';
 import Protected from './protectedroute/protectedRoute';
 import CategoriesComponent from './components/Categories';
 import CalendarComponent from './components/CalendarTask';
+import AccountSetting from './components/accountSettings';
 function App() {
   return (
     <Router>
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardComponent />} />
           <Route path="/categories" element={<CategoriesComponent />} />
           <Route path="/task" element={<CalendarComponent />} />
+          <Route path="/accountsettings" element={<AccountSetting />} />
         </Route>
       </Routes>
     </Router>

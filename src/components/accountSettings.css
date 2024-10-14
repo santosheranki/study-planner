@@ -1,0 +1,33 @@
+/* accountSettings.css */
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.handlebutton {
+    padding: 1em 0 0 0;
+}
+
+.colorlight {
+    color: #818181;
+    font-weight: 400;
+    font-size: 12px !important;
+    padding: 1em 0em 0em 0em !important;
+}
+
+.text-danger {
+    padding: 10px;
+    border: 1px solid rgba(255, 0, 0, 0.1);
+    background-color: rgba(255, 0, 0, 0.05);
+    border-radius: 5px;
+}
+
+.text-darker-danger {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    color: #DC3545;
+}
