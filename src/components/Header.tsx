@@ -20,6 +20,9 @@ const Headercomponent = () => {
                     <Nav.Link href="/categories" eventKey="link-1" className='text-white'>Categories</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
+                    <Nav.Link href="/accountsettings" eventKey="link-1" className='text-white'>Account</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
                     <Nav.Link eventKey="link-2" className='text-white' onClick={handlelogout}>Logout</Nav.Link>
                 </Nav.Item>
             </Nav>
