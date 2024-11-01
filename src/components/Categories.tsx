@@ -23,39 +23,19 @@ const CategoriesComponent = () => {
     const handleGetCategories = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`);
-            const tableCategories = await response.data.map(({ categoryid, title }: any) => ({
+            const tableCategories = response.data.map(({ categoryid, title, reason, activeFlag }: any) => ({
                 categoryid,
-                title
+                title,
+                reason: reason || 'N/A', // Provide a default empty string if reason is not available
+                status: activeFlag === 1 ? 'Active' : 'Inactive' // Map activeFlag to status
             }));
-            handleLogin(tableCategories);
+            setItems(tableCategories); // Set categories directly to items
+            setLoading(false); // Hide loader after data is fetched
         } catch (error: any) {
             console.error("Error fetching categories", error.message);
         }
     };
-    const getCategoryTitle = (categoryId: any, categoriesList: Array<any>) => {
-        const category = categoriesList.find(cat => cat.categoryid === categoryId);
-        return category ? category.title : 'Unknown Category';
-    };
-    const handleLogin = async (categoriesList: Array<any>) => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/gettabletasks/${uuidfromlocalstorage}`);
-            if (response && response.data) {
-                const fetchedItems = response.data.map((item: any) => ({
-                    id: item._id,
-                    dateCreated: new Date(item.createdDate).toLocaleDateString(),
-                    scheduledDate: new Date(item.start).toLocaleDateString() + ' ' + new Date(item.start).toLocaleTimeString(),
-                    taskTitle: item.title,
-                    category: getCategoryTitle(item.category, categoriesList),
-                    status: item.ActiveFlag === 1 ? 'Active' : 'Completed',
-                }));
-                fetchedItems.sort((a: any, b: any) => (a.status === 'Active' ? -1 : 1));
-                setItems(fetchedItems);
-                setLoading(false); // Hide loader after data is fetched
-            }
-        } catch (error: any) {
-            console.error('Error fetching tasks:', error.response);
-        }
-    };
+
     const indexOfLastItem = currentPage * recordsPerPage;
     const indexOfFirstItem = indexOfLastItem - recordsPerPage;
     const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
@@ -74,16 +54,16 @@ const CategoriesComponent = () => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
         const payload = {
             uuid: uuidfromlocalstorage,
-            title: values ? values.title : "",
-            reason: values ? values.description : ""
-        }
+            title: values.title || "",
+            reason: values.description || ""
+        };
         try {
-            console.log("payloaddddddd", payload)
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/addcategories`, payload);
             if (response.data.result === 1) {
                 toast.success("Category Added Successfully");
             }
             handleCloseModal();
+            handleGetCategories(); // Refresh the categories after adding a new one
         } catch (error: any) {
             toast.error("Uh-oh something went wrong. Please try again!");
         }
@@ -92,7 +72,7 @@ const CategoriesComponent = () => {
         <>
             {pathname === '/dashboard' ? '' : <Headercomponent />}
             <div className="container-fluid">
-                {pathname === '/dashboard' ? <h2 className="mb-4">List of Tasks</h2> : <h2 className="mb-4">List of Categories</h2>}
+                <h2 className="mb-4">{pathname === '/dashboard' ? 'List of Tasks' : 'List of Categories'}</h2>
                 <div className="d-flex justify-content-end mb-4">
                     {pathname === '/dashboard' ? '' :
                         <Button className='btncolors' onClick={handleShowModal}>
@@ -112,32 +92,28 @@ const CategoriesComponent = () => {
                 <Table striped bordered hover responsive>
                     <thead>
                         <tr>
-                            <th>Task Created Date</th>
-                            <th>Task Scheduled Date</th>
-                            <th>Task Title</th>
-                            <th>Category</th>
+                            <th>Category ID</th>
+                            <th>Title</th>
+                            <th>Reason</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            // Render skeleton loaders while loading
                             [...Array(recordsPerPage)].map((_, idx) => (
                                 <tr key={idx}>
                                     <td><Placeholder as="p" animation="glow"><Placeholder xs={7} /></Placeholder></td>
                                     <td><Placeholder as="p" animation="glow"><Placeholder xs={10} /></Placeholder></td>
                                     <td><Placeholder as="p" animation="glow"><Placeholder xs={6} /></Placeholder></td>
                                     <td><Placeholder as="p" animation="glow"><Placeholder xs={5} /></Placeholder></td>
-                                    <td><Placeholder as="p" animation="glow"><Placeholder xs={4} /></Placeholder></td>
                                 </tr>
                             ))
                         ) : (
                             currentItems.map(item => (
-                                <tr key={item.id} className="fade-in-row">
-                                    <td>{item.dateCreated}</td>
-                                    <td>{item.scheduledDate}</td>
-                                    <td>{item.taskTitle}</td>
-                                    <td>{item.category}</td>
+                                <tr key={item.categoryid}>
+                                    <td>{item.categoryid}</td>
+                                    <td>{item.title}</td>
+                                    <td>{item.reason}</td>
                                     <td>
                                         <span className={`badge ${item.status === 'Active' ? 'bg-success' : 'bg-danger'}`}>
                                             {item.status}
@@ -159,9 +135,8 @@ const CategoriesComponent = () => {
                         </Pagination.Item>
                     ))}
                 </Pagination>
-            </div >
-            {/* Modal for adding categories */}
-            < Modal show={showModal} onHide={handleCloseModal} >
+            </div>
+            <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Category</Modal.Title>
                 </Modal.Header>
@@ -173,7 +148,7 @@ const CategoriesComponent = () => {
                     >
                         {({ errors, touched }) => (
                             <FormikForm>
-                                <Form.Group >
+                                <Form.Group>
                                     <Form.Label>Category Title <span className='asterisk'>*</span></Form.Label>
                                     <Field
                                         name="title"
@@ -182,7 +157,6 @@ const CategoriesComponent = () => {
                                     />
                                     <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
                                 </Form.Group>
-
                                 <Form.Group controlId="formDescription" className="mt-3">
                                     <Form.Label>Description</Form.Label>
                                     <Field
@@ -192,7 +166,6 @@ const CategoriesComponent = () => {
                                         className="form-control"
                                     />
                                 </Form.Group>
-
                                 <div className="d-flex justify-content-end mt-4">
                                     <Button variant="primary" type="submit">
                                         Submit
@@ -202,7 +175,7 @@ const CategoriesComponent = () => {
                         )}
                     </Formik>
                 </Modal.Body>
-            </Modal >
+            </Modal>
         </>
     );
 };
