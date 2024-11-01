@@ -79,6 +79,10 @@ const Login: React.FC = () => {
             } else {
                 setFormErrors((prevErrors) => ({ ...prevErrors, username: '' }));
             }
+        } else if (!password) {
+            setFormErrors((prevErrors) => ({ ...prevErrors, password: 'Please enter a password.' }));
+        } else {
+            setFormErrors((prevErrors) => ({ ...prevErrors, password: '' }));
         }
     };
     return (
