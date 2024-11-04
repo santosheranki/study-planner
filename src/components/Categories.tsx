@@ -7,10 +7,17 @@ import axios from 'axios';
 import { Formik, Field, Form as FormikForm } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-
+interface Category {
+    categoryid: any;
+    title: any;
+    reason: any;
+    status: any; // Assuming you have status in your data
+}
 const CategoriesComponent = () => {
     const [items, setItems] = useState<any[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [isEditing, setIsEditing] = useState(false); // Track if editing
     const [recordsPerPage, setRecordsPerPage] = useState(8);
     const [loading, setLoading] = useState(true); // Add loading state
     const [showModal, setShowModal] = useState(false); // State to control modal
@@ -35,7 +42,31 @@ const CategoriesComponent = () => {
             console.error("Error fetching categories", error.message);
         }
     };
-
+    const handleEdit = async (category: any) => {
+        setSelectedCategory(category);
+        setIsEditing(true);
+        handleShowModal();
+        const uuidfromlocalstorage = localStorage.getItem('userid');
+        let payload = {
+            uuid: uuidfromlocalstorage,
+            categoryid: category.categoryid
+        }
+        const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/getcategoriesbyid`, payload);
+    };
+    const handleDelete = async (category: any) => {
+        const uuidfromlocalstorage = localStorage.getItem('userid');
+        let payload = {
+            uuid: uuidfromlocalstorage,
+            categoryid: category.categoryid
+        }
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/deletecategory`, payload);
+            toast.success("Category deleted successfully");
+            handleGetCategories();
+        } catch (error: any) {
+            toast.error("Error deleting category");
+        }
+    };
     const indexOfLastItem = currentPage * recordsPerPage;
     const indexOfFirstItem = indexOfLastItem - recordsPerPage;
     const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
@@ -45,25 +76,34 @@ const CategoriesComponent = () => {
         setRecordsPerPage(Number(e.target.value));
     };
     const handleShowModal = () => setShowModal(true);
-    const handleCloseModal = () => setShowModal(false);
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setIsEditing(false);
+        setSelectedCategory(null);
+    };
     const validationSchema = Yup.object({
         title: Yup.string().required('Title is required'),
         description: Yup.string(),
     });
+    const initialValues = {
+        title: selectedCategory ? selectedCategory.title : '',
+        description: selectedCategory ? selectedCategory.reason : '',
+    };
     const handleSubmit = async (values: any) => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
         const payload = {
             uuid: uuidfromlocalstorage,
             title: values.title || "",
-            reason: values.description || ""
+            reason: values.description || "",
+            categoryid: selectedCategory ? selectedCategory.categoryid : undefined, // Include categoryid if selectedCategory exists
         };
         try {
             const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/addcategories`, payload);
             if (response.data.result === 1) {
-                toast.success("Category Added Successfully");
+                toast.success(selectedCategory ? "Category Updated Successfully" : "Category Added Successfully");
             }
             handleCloseModal();
-            handleGetCategories(); // Refresh the categories after adding a new one
+            handleGetCategories(); // Refresh the categories after adding/updating
         } catch (error: any) {
             toast.error("Uh-oh something went wrong. Please try again!");
         }
@@ -96,6 +136,7 @@ const CategoriesComponent = () => {
                             <th>Title</th>
                             <th>Reason</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -119,6 +160,10 @@ const CategoriesComponent = () => {
                                             {item.status}
                                         </span>
                                     </td>
+                                    <td>
+                                        <Button variant="warning" size="sm" onClick={() => handleEdit(item)}>Edit</Button>{' '}
+                                        <Button variant="danger" size="sm" onClick={() => handleDelete(item)}>Delete</Button>
+                                    </td>
                                 </tr>
                             ))
                         )}
@@ -138,15 +183,15 @@ const CategoriesComponent = () => {
             </div>
             <Modal show={showModal} onHide={handleCloseModal}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Add Category</Modal.Title>
+                    <Modal.Title>{isEditing ? 'Edit Category' : 'Add Category'}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Formik
-                        initialValues={{ title: '', description: '' }}
+                        initialValues={initialValues}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ errors, touched }) => (
+                        {({ errors, touched }: any) => (
                             <FormikForm>
                                 <Form.Group>
                                     <Form.Label>Category Title <span className='asterisk'>*</span></Form.Label>
@@ -168,7 +213,7 @@ const CategoriesComponent = () => {
                                 </Form.Group>
                                 <div className="d-flex justify-content-end mt-4">
                                     <Button variant="primary" type="submit">
-                                        Submit
+                                        {isEditing ? 'Update' : 'Add'}
                                     </Button>
                                 </div>
                             </FormikForm>
