@@ -9,6 +9,8 @@ import Public from './protectedroute/publicRoute'; // Import the Public route co
 import CategoriesComponent from './components/Categories';
 import CalendarComponent from './components/CalendarTask';
 import AccountSetting from './components/accountSettings';
+import ForgotPassword from './components/forgotPassword';
+import ResetPassword from './components/resetPassword';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
         <Route element={<Public />}>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
 
         {/* Protected Routes */}

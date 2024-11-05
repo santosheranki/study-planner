@@ -65,6 +65,9 @@ const Login: React.FC = () => {
     const togglePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible);
     };
+    const handleForgotPassword = () => {
+        navigate('/forgot-password');
+    };
     const handleregister = () => {
         navigate('/register');
         setPassword('');
@@ -145,7 +148,10 @@ const Login: React.FC = () => {
                                 Login
                             </button>
                             <br />
-                            <label htmlFor="" className='d-flex justify-content-center' >No Account?  <a href="" onClick={handleregister}>Create one</a></label>
+                            <div className="d-flex justify-content-center">
+                                <a href="#" onClick={handleForgotPassword}>Forgot Password?</a>
+                            </div>
+                            <label htmlFor="" className='d-flex justify-content-center'> No Account?  <a href="" onClick={handleregister}  >Create one </a> </label>
                             {invalidpassword && (
                                 <div className="alert alert-danger" role="alert">
                                     Oops! Invalid password. Please check and try again.
