@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -7,6 +7,8 @@ const ResetPassword: React.FC = () => {
     const query = new URLSearchParams(useLocation().search);
     const username = query.get('username') || '';
     const resetToken = query.get('resetToken') || '';
+    const expiry = query.get('expiry');
+    const [isTokenValid, setIsTokenValid] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const navigate = useNavigate();
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -25,6 +27,29 @@ const ResetPassword: React.FC = () => {
     };
     const handlebacktologin = () => {
         navigate("/");
+    }
+    useEffect(() => {
+        const checkExpiry = () => {
+            const currentTime = Date.now();
+            if (expiry && parseInt(expiry) > currentTime) {
+                setIsTokenValid(true);
+            } else {
+                setIsTokenValid(false);
+            }
+        };
+        checkExpiry();
+    }, [expiry, navigate]);
+    if (!isTokenValid) {
+        return (
+            <div className='resetlink'>
+                <div>
+                    <p>The reset link has expired or is invalid.</p>
+                    <button onClick={() => navigate('/')} className='backtologinbtn'>
+                        Back to Login
+                    </button>
+                </div>
+            </div>
+        );
     }
     const handleResetPassword = async () => {
         if (!validatePassword()) return;
