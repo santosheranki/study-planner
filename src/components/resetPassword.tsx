@@ -86,6 +86,10 @@ const ResetPassword: React.FC = () => {
                     maxLength={64}
                     className={`form-control ${formErrors.newPassword && touched.newPassword ? 'is-invalid' : ''}`}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onCopy={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
+                    onContextMenu={(e) => e.preventDefault()}
                     onBlur={() => handleBlur('newPassword')}
                 />
                 {formErrors.newPassword && touched.newPassword && (
@@ -98,6 +102,10 @@ const ResetPassword: React.FC = () => {
                     maxLength={64}
                     className={`form-control ${formErrors.confirmPassword && touched.confirmPassword ? 'is-invalid' : ''}`}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onCopy={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
+                    onContextMenu={(e) => e.preventDefault()}
                     onBlur={() => handleBlur('confirmPassword')}
                 />
                 {formErrors.confirmPassword && touched.confirmPassword && (
