@@ -23,7 +23,6 @@ const CategoriesComponent = () => {
     const [showModal, setShowModal] = useState(false); // State to control modal
     const location = useLocation();
     const pathname = location.pathname;
-    const uuidfromlocalstorage = localStorage.getItem('userid');
     useEffect(() => {
         handleGetCategories();
     }, []);

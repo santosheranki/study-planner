@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import '../../src/components/resetPassword.css';
@@ -8,6 +8,7 @@ const ResetPassword: React.FC = () => {
     const username = query.get('username') || '';
     const resetToken = query.get('resetToken') || '';
     const [newPassword, setNewPassword] = useState('');
+    const navigate = useNavigate();
     const [confirmPassword, setConfirmPassword] = useState('');
     const [touched, setTouched] = useState<{ newPassword?: boolean; confirmPassword?: boolean }>({});
     const [formErrors, setFormErrors] = useState<{ newPassword?: string; confirmPassword?: string }>({});
@@ -35,6 +36,9 @@ const ResetPassword: React.FC = () => {
             setConfirmPassword('');
             setTouched({});
             setFormErrors({});
+            setTimeout(() => {
+                navigate('/');
+            }, 2000);
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Error resetting password');
         }
