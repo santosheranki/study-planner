@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import '../../src/components/forgotPassword.css';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 const ForgotPassword: React.FC = () => {
     const [username, setUsername] = useState('');
+    const navigate = useNavigate();
     const [touched, setTouched] = useState<{ username?: boolean }>({});
     const [formErrors, setFormErrors] = useState<{ username?: string }>({});
     const emailPattern = /^[a-zA-Z]+([.-]?[a-zA-Z0-9]+)*@([a-zA-Z]+([.-]?[a-zA-Z]))[.]{1}[a-zA-Z]{2,}$/;
@@ -18,6 +20,9 @@ const ForgotPassword: React.FC = () => {
             toast.error(error.response?.data?.message || 'Error sending reset link');
         }
     };
+    const handlebacktologin = () => {
+        navigate("/");
+    }
     const handleBlur = (field: string) => {
         setTouched({ ...touched, [field]: true });
         if (field === 'username') {
@@ -51,6 +56,10 @@ const ForgotPassword: React.FC = () => {
                 <button onClick={handleRequestReset} disabled={!isFormValid()} className={`btn-reset ${!isFormValid() ? 'disabled' : ''}`} >
                     Send Reset Link
                 </button>
+                <br />
+                <div>
+                    <label className='backtologin' > <a onClick={handlebacktologin} >Back to Login</a></label>
+                </div>
             </div>
         </div>
     );

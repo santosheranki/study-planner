@@ -101,3 +101,7 @@
 input.is-invalid {
     border-color: #dc3545;
 }
+
+.cursorpointer {
+    cursor: pointer;
+}

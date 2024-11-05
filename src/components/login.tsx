@@ -149,7 +149,7 @@ const Login: React.FC = () => {
                             </button>
                             <br />
                             <div className="d-flex justify-content-center">
-                                <a onClick={handleForgotPassword}>Forgot Password?</a>
+                                <a onClick={handleForgotPassword} className='cursorpointer'>Forgot Password?</a>
                             </div>
                             <label htmlFor="" className='d-flex justify-content-center'> No Account?  <a href="" onClick={handleregister}  >Create one </a> </label>
                             {invalidpassword && (

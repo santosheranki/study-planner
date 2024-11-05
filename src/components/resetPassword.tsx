@@ -23,6 +23,9 @@ const ResetPassword: React.FC = () => {
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
+    const handlebacktologin = () => {
+        navigate("/");
+    }
     const handleResetPassword = async () => {
         if (!validatePassword()) return;
         try {
@@ -82,6 +85,9 @@ const ResetPassword: React.FC = () => {
                 >
                     Reset Password
                 </button>
+                <div>
+                    <label className='backtologin' > <a onClick={handlebacktologin} >Back to Login</a></label>
+                </div>
             </div>
         </div>
     );
