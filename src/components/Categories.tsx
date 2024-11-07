@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Formik, Field, Form as FormikForm } from 'formik';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
+import axiosInstance from '../utils/axiosInstance';
 interface Category {
     categoryid: any;
     title: any;
@@ -28,7 +29,10 @@ const CategoriesComponent = () => {
     }, []);
     const handleGetCategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`);
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
             const tableCategories = response.data.map(({ categoryid, title, reason, activeFlag }: any) => ({
                 categoryid,
                 title,
@@ -50,7 +54,10 @@ const CategoriesComponent = () => {
             uuid: uuidfromlocalstorage,
             categoryid: category.categoryid
         }
-        const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/getcategoriesbyid`, payload);
+        const accessToken = localStorage.getItem('accessToken');
+        const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategoriesbyid`, payload, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
     };
     const handleDelete = async (category: any) => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
@@ -59,7 +66,10 @@ const CategoriesComponent = () => {
             categoryid: category.categoryid
         }
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/deletecategory`, payload);
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/deletecategory`, payload, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
             toast.success("Category deleted successfully");
             handleGetCategories();
         } catch (error: any) {

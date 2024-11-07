@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Spinner } from 'react-bootstrap';
 import { refreshAccessToken } from '../utils/authUtils';
+import axiosInstance from '../utils/axiosInstance';
 const DashboardComponent = () => {
     const navigate = useNavigate();
     const [categoriesCount, setCategoriesCount] = useState(0);
@@ -18,7 +19,7 @@ const DashboardComponent = () => {
             try {
                 const uuidfromlocalstorage = localStorage.getItem('userid');
                 const accessToken = localStorage.getItem('accessToken');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`, {
+                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`, {
                     headers: { Authorization: `Bearer ${accessToken}` }
                 });
                 if (response.data && response.data.categoriescount !== undefined) {
@@ -35,8 +36,11 @@ const DashboardComponent = () => {
         };
         const getscheduledcalendar = async () => {
             try {
+                const accessToken = localStorage.getItem('accessToken');
                 const uuidfromlocalstorage = localStorage.getItem('userid');
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${uuidfromlocalstorage}`);
+                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${uuidfromlocalstorage}`, {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
                 const today = new Date().toISOString().split('T')[0];
                 const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
                 setTodaysTasksCount(todayTasks.length);

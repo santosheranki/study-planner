@@ -10,6 +10,7 @@ import axios from 'axios';
 import '../../src/components/CalendarTask.css';
 import { toast } from 'react-toastify';
 import Headercomponent from './Header';
+import axiosInstance from '../utils/axiosInstance';
 const localizer = momentLocalizer(moment);
 interface Event {
     title: string;
@@ -51,7 +52,10 @@ const CalendarComponent: React.FC = () => {
     const handleindividualcard = async (event: any) => {
         const uuidfromlocalstorage = localStorage.getItem('userid');
         const calid = event.calendarId;
-        const response: any = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`);
+        const accessToken = localStorage.getItem('accessToken');
+        const response: any = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
         setIndividualCard(response.data[0]);
         setNewEvent({
             title: response.data[0].title,
@@ -69,7 +73,10 @@ const CalendarComponent: React.FC = () => {
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`);
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
             if (response && response.data) {
                 const categoriesList = response.data.map(({ title, categoryid }: any) => ({ title, categoryid }));
                 localStorage.setItem('categories', JSON.stringify(categoriesList));
@@ -82,7 +89,10 @@ const CalendarComponent: React.FC = () => {
     const fetchScheduledEvents = async () => {
         const userid = localStorage.getItem('userid');
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${userid}`);
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${userid}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
             if (response && response.data) {
                 const fetchedEvents = response.data.map((event: any) => ({
                     title: event.title,
@@ -124,7 +134,10 @@ const CalendarComponent: React.FC = () => {
         }
         setShowModal(false);
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/addcalendar`, payload);
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/addcalendar`, payload, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
             if (response.data.result === 1) {
                 toast.success("Yay! Calendar Scheduled");
                 fetchScheduledEvents();
