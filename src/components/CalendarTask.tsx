@@ -12,13 +12,6 @@ import { toast } from 'react-toastify';
 import Headercomponent from './Header';
 import axiosInstance from '../utils/axiosInstance';
 const localizer = momentLocalizer(moment);
-interface Event {
-    title: string;
-    start: Date;
-    end: Date;
-    category?: string;
-    description?: string;
-}
 const CalendarComponent: React.FC = () => {
     const [eventsData, setEventsData] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
@@ -195,12 +188,23 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
     };
     const validationSchema = Yup.object({
         title: Yup.string().required('Event title is required'),
-        start: Yup.date().required('Start date and time are required'),
+        start: Yup.date()
+            .required('Start date is required')
+            .min(new Date(), 'Start date cannot be in the past'),
         end: Yup.date()
-            .required('End date and time are required')
-            .min(Yup.ref('start'), 'End date and time cannot be before start date and time'),
+            .required('End date is required')
+            .test('is-after-start', 'End date cannot be before start date', function (value) {
+                const { start } = this.parent;
+                if (!start || !value) return true;
+                return value > start;
+            })
+            .test('no-same-time', 'End date cannot be the same as start date or time', function (value) {
+                const { start } = this.parent;
+                if (!start || !value) return true;
+                return value.getTime() !== start.getTime();
+            }),
         category: Yup.string().required('Category is required'),
-        description: Yup.string()  // Add validation for description (optional)
+        description: Yup.string()
     });
     return (
         <Modal show={show} onHide={handleClose}>
