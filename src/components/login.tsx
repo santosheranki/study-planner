@@ -32,6 +32,7 @@ const Login: React.FC = () => {
             });
             console.log('Login successful:', response);
             if (response?.data?.result === 1) {
+                localStorage.setItem('username', response?.data?.username);
                 localStorage.setItem('accessToken', response?.data?.accessToken);
                 localStorage.setItem('refreshToken', response?.data?.refreshToken);
                 navigate('/dashboard');

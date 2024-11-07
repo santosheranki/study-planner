@@ -31,3 +31,7 @@ h2 {
     margin-top: 5px;
     color: #DC3545;
 }
+
+hr {
+    border: 1px solid #775ad6;
+}

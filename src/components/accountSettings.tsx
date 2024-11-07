@@ -52,6 +52,10 @@ const AccountSetting: React.FC = () => {
             <Headercomponent />
             <div className="container-fluid mt-4">
                 <h2 className="mb-3">Account Settings</h2>
+                <hr />
+                <p>Your details</p>
+                <p>Display Name : {localStorage.getItem('userwelcomename')}</p>
+                <p>Username : {localStorage.getItem('username')}</p>
                 <div className="text-danger mb-3">
                     <h5>Danger Zone</h5>
                     <p>
@@ -85,6 +89,10 @@ const AccountSetting: React.FC = () => {
                                             name="username"
                                             placeholder="Enter Username at the time of creation"
                                             className="form-control"
+                                            onCopy={(e: any) => e.preventDefault()}
+                                            onPaste={(e: any) => e.preventDefault()}
+                                            onCut={(e: any) => e.preventDefault()}
+                                            onContextMenu={(e: any) => e.preventDefault()}
                                             onBlur={() => setTouched({ username: true })}
                                         />
                                         <ErrorMessage name="username" component="div" className="text-danger" />
