@@ -43,21 +43,30 @@ const CalendarComponent: React.FC = () => {
         setShowModal(true);
     };
     const handleindividualcard = async (event: any) => {
-        const uuidfromlocalstorage = localStorage.getItem('userid');
-        const calid = event.calendarId;
-        const accessToken = localStorage.getItem('accessToken');
-        const response: any = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        setIndividualCard(response.data[0]);
-        setNewEvent({
-            title: response.data[0].title,
-            start: response.data[0].start.split('T')[0] + 'T' + response.data[0].start.split('T')[1],
-            end: response.data[0].end.split('T')[0] + 'T' + response.data[0].end.split('T')[1],
-            category: response.data[0].category.toString(),
-            description: response.data[0].description || ''
-        });
-        setShowModal(true);
+        try {
+            const uuidfromlocalstorage = localStorage.getItem('userid');
+            const calid = event.calendarId;
+            const accessToken = localStorage.getItem('accessToken');
+            const response: any = await axiosInstance.get(
+                `${process.env.REACT_APP_API_URL}/calendar/getdetailedcalendarbyid/${uuidfromlocalstorage}/${calid}`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            if (response.data) {
+                setIndividualCard(response.data[0]);
+                setNewEvent({
+                    title: response.data[0].title,
+                    start: response.data[0].start,
+                    end: response.data[0].end,
+                    category: response.data[0].category.toString(),
+                    description: response.data[0].description || ''
+                });
+                setShowModal(true);
+            }
+        } catch (error) {
+            console.error("Error fetching individual card data:", error);
+            toast.error("Failed to load event details. Please try again.");
+            setShowModal(false);
+        }
     };
     useEffect(() => {
         handleGetCategoryTypes();
@@ -83,9 +92,10 @@ const CalendarComponent: React.FC = () => {
         const userid = localStorage.getItem('userid');
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${userid}`, {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            });
+            const response = await axiosInstance.get(
+                `${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${userid}`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
             if (response && response.data) {
                 const fetchedEvents = response.data.map((event: any) => ({
                     title: event.title,
@@ -96,10 +106,17 @@ const CalendarComponent: React.FC = () => {
                     description: event.description || ''  // Add description field
                 }));
                 setEventsData(fetchedEvents);
+            } else {
+                setEventsData([]);
             }
         } catch (error: any) {
-            console.error('Error fetching scheduled events:', error.response);
-            if (error.response.status === 404) setEventsData([]);
+            console.error('Error fetching scheduled events:', error);
+            setEventsData([]);
+            if (error.response && error.response.status === 404) {
+                toast.warn("No events found.");
+            } else {
+                toast.error("Failed to load events. Please try again later.");
+            }
         }
     };
     const handleSave = async (values: any) => {
@@ -114,29 +131,32 @@ const CalendarComponent: React.FC = () => {
             description: values.description || '',
             ActiveFlag: 1,
         };
-        const { title, start, end } = values;
-        if (individualcard) {
-            const updatedEvents = eventsData.map(event =>
-                event.calendarId === individualcard.calendarId
-                    ? { ...event, title, start: new Date(start), end: new Date(end), description: values.description }
-                    : event
-            );
-            setEventsData(updatedEvents);
-        } else {
-            setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end), description: values.description }]);
-        }
-        setShowModal(false);
         try {
             const accessToken = localStorage.getItem('accessToken');
             const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/addcalendar`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (response.data.result === 1) {
+                // Only update the UI state if the API call was successful
+                const { title, start, end } = values;
+                if (individualcard) {
+                    const updatedEvents = eventsData.map(event =>
+                        event.calendarId === individualcard.calendarId
+                            ? { ...event, title, start: new Date(start), end: new Date(end), description: values.description }
+                            : event
+                    );
+                    setEventsData(updatedEvents);
+                } else {
+                    setEventsData([...eventsData, { title, start: new Date(start), end: new Date(end), description: values.description }]);
+                }
                 toast.success("Yay! Calendar Scheduled");
                 fetchScheduledEvents();
             }
         } catch (error) {
             console.error('Error adding event:', error);
+            toast.error("Couldn’t add event. Duplicate found. Try a different time.");
+        } finally {
+            setShowModal(false);
         }
     };
     return (
