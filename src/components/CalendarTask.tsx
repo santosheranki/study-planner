@@ -112,11 +112,6 @@ const CalendarComponent: React.FC = () => {
         } catch (error: any) {
             console.error('Error fetching scheduled events:', error);
             setEventsData([]);
-            if (error.response && error.response.status === 404) {
-                toast.warn("No events found.");
-            } else {
-                toast.error("Failed to load events. Please try again later.");
-            }
         }
     };
     const handleSave = async (values: any) => {
