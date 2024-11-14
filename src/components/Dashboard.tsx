@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Spinner } from 'react-bootstrap';
 import { refreshAccessToken } from '../utils/authUtils';
 import axiosInstance from '../utils/axiosInstance';
+import DashboardListComponent from './CalendarList';
 const DashboardComponent = () => {
     const navigate = useNavigate();
     const [categoriesCount, setCategoriesCount] = useState(0);
@@ -48,9 +49,20 @@ const DashboardComponent = () => {
                 console.error("Error fetching Active Calendars", error.message);
             }
         };
+        // const getallscheduledcalendarstilldate = async () => {
+        //     const userid = localStorage.getItem("userid");
+        //     try {
+        //         const response = await axios.get(`${process.env.REACT_APP_API_URL}/calendar/getallscheduledcalendarstilldate/${userid}`);
+        //         console.log("letmeseetheallcalendarsresponse", response);
+        //     }
+        //     catch (error: any) {
+        //         console.error('Error fetching categories:', error.response);
+        //     }
+        // }
         const loadData = async () => {
             setLoading(true);
-            await Promise.all([fetchCategoryCount(), getscheduledcalendar()]);
+            await Promise.all([fetchCategoryCount(), getscheduledcalendar(),
+            ]);
             setLoading(false);
         };
         loadData();
@@ -77,7 +89,9 @@ const DashboardComponent = () => {
                             <Card
                                 icon="fas fa-table"
                                 title="Total Categories"
+                                onClick={handleCategories}
                                 count={categoriesCount}
+                                style={{ cursor: 'pointer' }}
                                 color="gray"
                                 background="#deffdd"
                             />
@@ -92,10 +106,8 @@ const DashboardComponent = () => {
                                 icon="fas fa-calendar-alt"
                                 title="Overall Active Scheduled Tasks"
                                 count={scheduledTasksCount}
-                                onClick={handleCategories}
                                 background="#ccadeb"
                                 color="yellow"
-                                style={{ cursor: 'pointer' }}
                             />
                             <Card
                                 icon="fas fa-calendar-alt"
@@ -105,7 +117,7 @@ const DashboardComponent = () => {
                                 background="#fcffc8"
                             />
                         </div>
-                        <CategoriesComponent />
+                        <DashboardListComponent />
                     </div>
                 </div>
             )}
