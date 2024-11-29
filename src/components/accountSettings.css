@@ -20,6 +20,13 @@ h2 {
     padding: 1em 0em 0em 0em !important;
 }
 
+.colorlight2 {
+    color: #818181;
+    font-weight: 400;
+    font-size: 12px !important;
+    padding: 1em 0em 0em 0em !important;
+}
+
 .text-danger {
     border-radius: 5px;
 }
@@ -32,4 +39,20 @@ h2 {
 
 hr {
     border: 1px solid #775ad6;
+}
+
+.cardma {
+    box-shadow: none !important;
+}
+
+.changingpassword {
+
+    color: #775ad6 !important;
+    background: #fff !important;
+    border: 1px solid #775ad6 !important;
+}
+
+.changingpassword:hover {
+    color: #fff !important;
+    background-color: #775ad6 !important;
 }
