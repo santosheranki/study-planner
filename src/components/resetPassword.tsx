@@ -68,6 +68,10 @@ const ResetPassword: React.FC = () => {
                 navigate('/');
             }, 2000);
         } catch (error: any) {
+            setTimeout(() => {
+                setNewPassword('');
+                setConfirmPassword('');
+            }, 2000);
             toast.error(error.response?.data?.message || 'Error resetting password');
         }
     };

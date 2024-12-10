@@ -69,7 +69,7 @@ const AccountSetting: React.FC = () => {
             console.error("Error while deleting", error);
         }
     };
-    const handleChangePassword = async (values: { username: string, oldPassword: string, newPassword: string, confirmPassword: string }) => {
+    const handleChangePassword = async (values: { username: string, oldPassword: string, newPassword: string, confirmPassword: string }, { setFieldValue }: any) => {
         const payload = {
             username: values.username,
             uuid: localStorage.getItem('userid'),
@@ -87,9 +87,19 @@ const AccountSetting: React.FC = () => {
                 localStorage.clear();
                 navigate('/');
             } else {
+                setTimeout(() => {
+                    setFieldValue('oldPassword', '');
+                    setFieldValue('newPassword', '');
+                    setFieldValue('confirmPassword', '');
+                }, 2000);
                 toast.error(response.data.message || 'An error occurred while changing the password.');
             }
         } catch (error: any) {
+            setTimeout(() => {
+                setFieldValue('oldPassword', '');
+                setFieldValue('newPassword', '');
+                setFieldValue('confirmPassword', '');
+            }, 2000);
             if (error.response) {
                 toast.error(error.response.data.message || 'An error occurred. Please try again.');
             } else if (error.request) {
@@ -184,9 +194,9 @@ const AccountSetting: React.FC = () => {
                     </Modal.Header>
                     <Modal.Body>
                         <Formik
-                            initialValues={{ username: '', oldPassword: '', newPassword: '', confirmPassword: '', }}
+                            initialValues={{ username: '', oldPassword: '', newPassword: '', confirmPassword: '' }}
                             validationSchema={changePasswordSchema}
-                            onSubmit={handleChangePassword}
+                            onSubmit={(values, formikHelpers) => handleChangePassword(values, formikHelpers)} // Pass the formikHelpers context here
                         >
                             {({ values, handleChange, setTouched }) => (
                                 <FormikForm>

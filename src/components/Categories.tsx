@@ -171,7 +171,7 @@ const CategoriesComponent = () => {
                                     </td>
                                     <td>
                                         <Button variant="warning" size="sm" onClick={() => handleEdit(item)}>Edit</Button>{' '}
-                                        <Button variant="danger" size="sm" onClick={() => handleDelete(item)}>Delete</Button>
+                                        <Button variant="danger" className='my-2' size="sm" onClick={() => handleDelete(item)}>Delete</Button>
                                     </td>
                                 </tr>
                             ))

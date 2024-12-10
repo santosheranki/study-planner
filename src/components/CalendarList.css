@@ -1,11 +1,17 @@
 .table-container {
     margin-top: 20px;
+    overflow-x: auto;
+    /* Add this to enable scrolling only for the table container */
+    max-width: 100%;
+    /* Ensure the container doesn't exceed the page width */
 }
 
 .events-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
+    min-width: 600px;
+    /* Set a minimum width for the table, adjust as needed */
 }
 
 .events-table th,
