@@ -5,12 +5,14 @@ import '../../src/login.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { GoogleLogin } from 'react-google-login'
 const keyBase64 = 'vI7cGtC3P7FAmG4+jL+VORhxPaF++5FZml+Kv3o4Rsw='; // Your 32-byte key in base64
 const key = CryptoJS.enc.Base64.parse(keyBase64);
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [invalidpassword, setinvalidpassword] = useState(false);
+    const clientId = '69248608745-0poa11g316s9c5af125l1p512bkdob1p.apps.googleusercontent.com';
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [formErrors, setFormErrors] = useState({ username: '', password: '' });
     const [touched, setTouched] = useState({ username: false, password: false });
@@ -89,6 +91,31 @@ const Login: React.FC = () => {
             setFormErrors((prevErrors) => ({ ...prevErrors, password: '' }));
         }
     };
+
+    const onSuccess = (response: any) => {
+        console.log("thisfunctioncalled");
+        console.log(response, "logged in");
+        const idToken = response.tokenId;
+        axios.post(`${process.env.REACT_APP_API_URL}/auth/google`, {
+            id_token: idToken
+        }).then((checkResponse) => {
+            if (checkResponse?.data?.result === 1) {
+                localStorage.setItem('accessToken', checkResponse?.data?.accessToken);
+                localStorage.setItem('refreshToken', checkResponse?.data?.refreshToken);
+                localStorage.setItem('userid', checkResponse?.data?.googleId);
+                localStorage.setItem('username', checkResponse?.data?.user?.email);
+                localStorage.setItem('userwelcomename', checkResponse?.data?.user?.name);
+                navigate('/dashboard');
+            }
+        }).catch((error) => {
+            console.error('Error during login:', error);
+        });
+    };
+
+    const onFailure = (error: any) => {
+        console.error('Google login error:', error);
+    };
+
     return (
         <div className="htmlcontent">
             <div className="container">
@@ -158,6 +185,16 @@ const Login: React.FC = () => {
                                     Oops! Invalid password. Please check and try again.
                                 </div>
                             )}
+                            <div id='signInButton'>
+                                <GoogleLogin
+                                    clientId={clientId}
+                                    buttonText='Login'
+                                    onSuccess={onSuccess}
+                                    onFailure={onFailure}
+                                    cookiePolicy={"single_host_origin"}
+                                    isSignedIn={true}
+                                />
+                            </div>
                         </form>
                     </div>
                 </div>

@@ -11,8 +11,20 @@ import CalendarComponent from './components/CalendarTask';
 import AccountSetting from './components/accountSettings';
 import ForgotPassword from './components/forgotPassword';
 import ResetPassword from './components/resetPassword';
+import { useEffect } from 'react';
+import { gapi } from 'gapi-script'
 
 function App() {
+  const clientId = '69248608745-0poa11g316s9c5af125l1p512bkdob1p.apps.googleusercontent.com';
+  useEffect(() => {
+    function start() {
+      gapi.client.init({
+        clientId: clientId,
+        scope: "",
+      })
+    };
+    gapi.load('client:auth2', start)
+  })
   return (
     <Router>
       <ToastService /> {/* Include the ToastService component */}
