@@ -30,7 +30,10 @@ const CategoriesComponent = () => {
     const handleGetCategories = async () => {
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, {
+            const payload = {
+                uuid: localStorage.getItem('userid')
+            }
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             const tableCategories = response.data.map(({ categoryid, title, reason, activeFlag }: any) => ({
@@ -42,6 +45,7 @@ const CategoriesComponent = () => {
             setItems(tableCategories); // Set categories directly to items
             setLoading(false); // Hide loader after data is fetched
         } catch (error: any) {
+            setLoading(false);
             console.error("Error fetching categories", error.message);
         }
     };
@@ -70,7 +74,7 @@ const CategoriesComponent = () => {
             const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/deletecategory`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
-            toast.success("Category deleted successfully");
+            toast.success("Category Deleted successfully");
             handleGetCategories();
         } catch (error: any) {
             toast.error("Error deleting category");

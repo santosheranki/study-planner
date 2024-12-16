@@ -74,9 +74,12 @@ const CalendarComponent: React.FC = () => {
     }, []);
     const handleGetCategoryTypes = async () => {
         const userid = localStorage.getItem('userid');
+        const payload = {
+            uuid: userid
+        }
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (response && response.data) {
