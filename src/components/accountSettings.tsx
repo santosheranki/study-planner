@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Field, Form as FormikForm, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -11,7 +11,6 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 
 const emailPattern = /^[a-zA-Z]+([.-]?[a-zA-Z0-9]+)*@([a-zA-Z]+([.-]?[a-zA-Z]))[.]{1}[a-zA-Z]{2,}$/;
-
 const validationSchema = Yup.object().shape({
     username: Yup.string()
         .matches(emailPattern, 'Invalid email format')
@@ -36,16 +35,25 @@ const changePasswordSchema = Yup.object().shape({
         .required('Confirm Password is required'),
 });
 const AccountSetting: React.FC = () => {
+    const [isGoogleUser, setIsGoogleUser] = useState(localStorage.getItem('isGoogleUser') === 'true');
+    useEffect(() => {
+        setIsGoogleUser(localStorage.getItem('isGoogleUser') === 'true');
+    }, [localStorage.getItem('isGoogleUser')]);
     const navigate = useNavigate();
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
     const accessToken = localStorage.getItem('accessToken');
     const handleDelete = async (values: { username: string }) => {
-        const uuidfromlocalstorage = localStorage.getItem('userid');
-        let payload = {
-            username: values.username,
-            uuid: uuidfromlocalstorage
+        const isGoogleUser = localStorage.getItem('isGoogleUser') === 'true';
+        const userId = isGoogleUser ? localStorage.getItem('googleId') : localStorage.getItem('userid')
+        let payload: any = {
+            username: values?.username,
         };
+        if (isGoogleUser) {
+            payload.googleId = userId;
+        } else {
+            payload.uuid = userId;
+        }
         try {
             const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/auth/delete-user`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
@@ -66,7 +74,6 @@ const AccountSetting: React.FC = () => {
             } else {
                 toast.error('An unexpected error occurred. Please try again.');
             }
-            console.error("Error while deleting", error);
         }
     };
     const handleChangePassword = async (values: { username: string, oldPassword: string, newPassword: string, confirmPassword: string }, { setFieldValue }: any) => {
@@ -107,7 +114,6 @@ const AccountSetting: React.FC = () => {
             } else {
                 toast.error('An unexpected error occurred. Please try again.');
             }
-            console.error("Error while changing password", error);
         }
     };
     return (
@@ -119,18 +125,20 @@ const AccountSetting: React.FC = () => {
                 <p>Your details</p>
                 <p>Display Name : {localStorage.getItem('userwelcomename')}</p>
                 <p>Username : {localStorage.getItem('username')}</p>
-                <div className="cardma mb-4" style={{ maxWidth: '500px' }}>
-                    <h5>Change Your Password</h5>
-                    <p className="text-muted">
-                        Keep your account secure by updating your password regularly.
-                    </p>
-                    <Button
-                        onClick={() => setIsChangePasswordModalVisible(true)}
-                        className="w-10 changingpassword"
-                    >
-                        Change Password
-                    </Button>
-                </div>
+                {!isGoogleUser && (
+                    <div className="cardma mb-4" style={{ maxWidth: '500px' }}>
+                        <h5>Change Your Password</h5>
+                        <p className="text-muted">
+                            Keep your account secure by updating your password regularly.
+                        </p>
+                        <Button
+                            onClick={() => setIsChangePasswordModalVisible(true)}
+                            className="w-10 changingpassword"
+                        >
+                            Change Password
+                        </Button>
+                    </div>
+                )}
                 <div className="text-danger mb-3">
                     <h5>Danger Zone</h5>
                     <p>

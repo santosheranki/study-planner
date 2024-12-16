@@ -11,6 +11,7 @@
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@mui/material": "^5.16.5",
+    "@react-oauth/google": "^0.12.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -32,7 +33,6 @@
     "react-big-calendar": "^1.13.1",
     "react-bootstrap": "^2.10.4",
     "react-dom": "^18.3.1",
-    "react-google-login": "^5.2.2",
     "react-icons": "^5.2.1",
     "react-router-dom": "^6.25.1",
     "react-scripts": "5.0.1",
@@ -43,7 +43,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false npm install --force && react-scripts build",
+    "build": "npm install --force && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

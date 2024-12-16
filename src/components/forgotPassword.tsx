@@ -17,7 +17,12 @@ const ForgotPassword: React.FC = () => {
             setFormErrors({});
             setTouched({});
         } catch (error: any) {
-            toast.error(error.response?.data?.message || 'Error sending reset link');
+            if (error.response.data.result === 0 && error.response.data.message === 'The username has been used for different sign-in method. Please check') {
+                toast.error('The username has been used for different sign-in method. Please check');
+                setTimeout(() => {
+                    setUsername('');
+                }, 5000);
+            }
         }
     };
     const handlebacktologin = () => {

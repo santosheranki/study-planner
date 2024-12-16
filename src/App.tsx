@@ -13,7 +13,7 @@ import ForgotPassword from './components/forgotPassword';
 import ResetPassword from './components/resetPassword';
 import { useEffect } from 'react';
 import { gapi } from 'gapi-script'
-
+import { GoogleOAuthProvider } from '@react-oauth/google';
 function App() {
   const clientId = '69248608745-0poa11g316s9c5af125l1p512bkdob1p.apps.googleusercontent.com';
   useEffect(() => {
@@ -26,30 +26,32 @@ function App() {
     gapi.load('client:auth2', start)
   })
   return (
-    <Router>
-      <ToastService /> {/* Include the ToastService component */}
-      <Routes>
-        {/* Public Routes */}
-        <Route element={<Public />}>
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-        </Route>
+    <GoogleOAuthProvider clientId={clientId}>
+      <Router>
+        <ToastService /> {/* Include the ToastService component */}
+        <Routes>
+          {/* Public Routes */}
+          <Route element={<Public />}>
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+          </Route>
 
-        {/* Protected Routes */}
-        <Route element={<Protected />}>
-          <Route path="/home" element={<DashboardComponent />} />
-          <Route path="/dashboard" element={<DashboardComponent />} />
-          <Route path="/categories" element={<CategoriesComponent />} />
-          <Route path="/task" element={<CalendarComponent />} />
-          <Route path="/accountsettings" element={<AccountSetting />} />
-        </Route>
+          {/* Protected Routes */}
+          <Route element={<Protected />}>
+            <Route path="/home" element={<DashboardComponent />} />
+            <Route path="/dashboard" element={<DashboardComponent />} />
+            <Route path="/categories" element={<CategoriesComponent />} />
+            <Route path="/task" element={<CalendarComponent />} />
+            <Route path="/accountsettings" element={<AccountSetting />} />
+          </Route>
 
-        {/* Fallback Route for 404 Not Found */}
-        <Route path="*" element={<h2>Page Not Found</h2>} />
-      </Routes>
-    </Router>
+          {/* Fallback Route for 404 Not Found */}
+          <Route path="*" element={<h2>Page Not Found</h2>} />
+        </Routes>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

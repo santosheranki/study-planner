@@ -5,7 +5,7 @@ import '../../src/login.css';
 import 'font-awesome/css/font-awesome.min.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { GoogleLogin } from 'react-google-login'
+import { GoogleLogin } from '@react-oauth/google';
 const keyBase64 = 'vI7cGtC3P7FAmG4+jL+VORhxPaF++5FZml+Kv3o4Rsw='; // Your 32-byte key in base64
 const key = CryptoJS.enc.Base64.parse(keyBase64);
 const Login: React.FC = () => {
@@ -32,8 +32,8 @@ const Login: React.FC = () => {
                 username,
                 password, // Send plain text password
             });
-            console.log('Login successful:', response);
             if (response?.data?.result === 1) {
+                localStorage.setItem('isGoogleUser', 'false');
                 localStorage.setItem('username', response?.data?.username);
                 localStorage.setItem('accessToken', response?.data?.accessToken);
                 localStorage.setItem('refreshToken', response?.data?.refreshToken);
@@ -42,14 +42,16 @@ const Login: React.FC = () => {
                 localStorage.setItem('userwelcomename', response?.data?.userwelcomename);
             }
             else if (response.data.result === 0 && response.data.message === 'Invalid password') {
-                console.log("invalid passwrod");
                 setinvalidpassword(true);
             }
-            else {
-                console.error("error");
-            }
         } catch (error: any) {
-            console.error('Error logging in:', error.response);
+            if (error.response.data.result === 0 && error.response.data.message === 'The username has been used for different sign-in method. Please check') {
+                toast.error('The username has been used for different sign-in method. Please check');
+                setTimeout(() => {
+                    setUsername('');
+                    setPassword('');
+                }, 5000);
+            }
             if (error.response.data.result === 0 && error.response.data.message === 'User not found') {
                 toast.error('The user ID entered does not exist. Please check the user ID and password');
                 setTimeout(() => {
@@ -93,27 +95,23 @@ const Login: React.FC = () => {
     };
 
     const onSuccess = (response: any) => {
-        console.log("thisfunctioncalled");
-        console.log(response, "logged in");
-        const idToken = response.tokenId;
+        const idToken = response?.credential;
         axios.post(`${process.env.REACT_APP_API_URL}/auth/google`, {
             id_token: idToken
         }).then((checkResponse) => {
             if (checkResponse?.data?.result === 1) {
                 localStorage.setItem('accessToken', checkResponse?.data?.accessToken);
                 localStorage.setItem('refreshToken', checkResponse?.data?.refreshToken);
-                localStorage.setItem('userid', checkResponse?.data?.googleId);
+                localStorage.setItem('googleId', checkResponse?.data?.googleId);
+                localStorage.setItem('isGoogleUser', 'true');
                 localStorage.setItem('username', checkResponse?.data?.user?.email);
                 localStorage.setItem('userwelcomename', checkResponse?.data?.user?.name);
+                localStorage.setItem('userid', checkResponse?.data?.googleId);
                 navigate('/dashboard');
             }
         }).catch((error) => {
             toast.error('User exists with the same email');
         });
-    };
-
-    const onFailure = (error: any) => {
-        console.error('Google login error:', error);
     };
 
     return (
@@ -188,12 +186,7 @@ const Login: React.FC = () => {
                             <p className='text-center pd2em'> OR</p>
                             <div id='signInButton' className='gogleBtn'>
                                 <GoogleLogin
-                                    className='gogglebtnstyle'
-                                    clientId={clientId}
-                                    buttonText='Continue with Google'
                                     onSuccess={onSuccess}
-                                    onFailure={onFailure}
-                                    cookiePolicy={"single_host_origin"}
                                 />
                             </div>
                         </form>
