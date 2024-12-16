@@ -39,7 +39,7 @@ const Register: React.FC = () => {
             }
             console.log('Register response:', response.data);
         } catch (error) {
-            console.error('Error registering user:', error);
+            toast.error('Duplicate Record! Please check the username entered');
         }
     };
     const togglePasswordVisibility = () => {
