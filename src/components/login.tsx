@@ -108,7 +108,7 @@ const Login: React.FC = () => {
                 navigate('/dashboard');
             }
         }).catch((error) => {
-            console.error('Error during login:', error);
+            toast.error('User exists with the same email');
         });
     };
 
@@ -185,14 +185,15 @@ const Login: React.FC = () => {
                                     Oops! Invalid password. Please check and try again.
                                 </div>
                             )}
-                            <div id='signInButton'>
+                            <p className='text-center pd2em'> OR</p>
+                            <div id='signInButton' className='gogleBtn'>
                                 <GoogleLogin
+                                    className='gogglebtnstyle'
                                     clientId={clientId}
-                                    buttonText='Login'
+                                    buttonText='Continue with Google'
                                     onSuccess={onSuccess}
                                     onFailure={onFailure}
                                     cookiePolicy={"single_host_origin"}
-                                    isSignedIn={true}
                                 />
                             </div>
                         </form>
