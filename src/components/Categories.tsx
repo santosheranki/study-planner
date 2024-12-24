@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Headercomponent from './Header';
 import '../../src/components/Categories.css';
 import { Table, Pagination, Form, Placeholder, Button, Modal } from 'react-bootstrap';
@@ -24,10 +24,14 @@ const CategoriesComponent = () => {
     const [showModal, setShowModal] = useState(false); // State to control modal
     const location = useLocation();
     const pathname = location.pathname;
+    const hasFetched = useRef(false);
     useEffect(() => {
-        handleGetCategories();
+        if (!hasFetched.current) {
+            handleGetCategories();
+            hasFetched.current = true;
+        }
     }, []);
-    const handleGetCategories = async () => {
+    const handleGetCategories = useCallback(async () => {
         try {
             const accessToken = localStorage.getItem('accessToken');
             const payload = {
@@ -48,7 +52,7 @@ const CategoriesComponent = () => {
             setLoading(false);
             console.error("Error fetching categories", error.message);
         }
-    };
+    }, []);
     const handleEdit = async (category: any) => {
         setSelectedCategory(category);
         setIsEditing(true);
@@ -111,7 +115,7 @@ const CategoriesComponent = () => {
             categoryid: selectedCategory ? selectedCategory.categoryid : undefined, // Include categoryid if selectedCategory exists
         };
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/addcategories`, payload);
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/addcategories`, payload);
             if (response.data.result === 1) {
                 toast.success(selectedCategory ? "Category Updated Successfully" : "Category Added Successfully");
             }

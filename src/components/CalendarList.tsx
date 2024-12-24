@@ -1,4 +1,4 @@
-import { SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback, SetStateAction } from 'react';
 import '../../src/components/CalendarList.css'
 import axiosInstance from '../utils/axiosInstance';
 import { Spinner } from 'react-bootstrap';
@@ -8,22 +8,26 @@ const DashboardListComponent = () => {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(5);
+    const hasFetched = useRef(false);
     useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const uuidfromlocalstorage = localStorage.getItem('userid');
-                const accessToken = localStorage.getItem('accessToken');
-                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getallscheduledcalendarstilldate/${uuidfromlocalstorage}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                setEvents(response.data);
-            } catch (error) {
-                console.error('Error fetching events:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchEvents();
+        if (!hasFetched.current) {
+            fetchEvents();
+            hasFetched.current = true;
+        }
+    }, []);
+    const fetchEvents = useCallback(async () => {
+        try {
+            const uuidfromlocalstorage = localStorage.getItem('userid');
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getallscheduledcalendarstilldate/${uuidfromlocalstorage}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            setEvents(response.data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
     // Pagination logic
     const indexOfLastRecord = currentPage * recordsPerPage;
