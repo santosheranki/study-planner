@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Headercomponent from './Header';
 import '../../src/components/Categories.css';
 import { Table, Pagination, Form, Placeholder, Button } from 'react-bootstrap';
@@ -22,12 +22,14 @@ const ViewTicketsComponent = () => {
     const handleRecordsPerPageChange = (e: any) => {
         setRecordsPerPage(Number(e.target.value));
     };
-
+    const hasFetched = useRef(false);
     useEffect(() => {
-        handleGetTickets();
+        if (!hasFetched.current) {
+            handleGetTickets();
+            hasFetched.current = true;
+        }
     }, []);
-
-    const handleGetTickets = async () => {
+    const handleGetTickets = useCallback(async () => {
         const username = localStorage.getItem('username');
         const googleId = localStorage.getItem('googleId');
         const uuid = localStorage.getItem('uuid');
@@ -69,8 +71,8 @@ const ViewTicketsComponent = () => {
         } catch (error) {
             setLoading(false);
         }
-    };
-    const isAdminUser = localStorage.getItem('adminUser') === 'true'
+    }, []);
+    const isAdminUser = localStorage.getItem('adminUser') === 'true';
     const handleMarkAsClose = async (_id: string, username: string) => {
         const isAdminUser = localStorage.getItem('adminUser') === 'true';
         const payload = {
