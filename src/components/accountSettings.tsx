@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import { Formik, Field, Form as FormikForm, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -44,28 +44,32 @@ const changePasswordSchema = Yup.object().shape({
 const AccountSetting: React.FC = () => {
     const [ticketCategories, setTicketCategories] = useState<any[]>([]);
     const [isGoogleUser, setIsGoogleUser] = useState(localStorage.getItem('isGoogleUser') === 'true');
+    const hasFetched = useRef(false);
     useEffect(() => {
         setIsGoogleUser(localStorage.getItem('isGoogleUser') === 'true');
-        const handleGetCategoryTypes = async () => {
-            try {
-                const accessToken = localStorage.getItem('accessToken');
-                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/auth/getticketcategorytypes`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                const store = localStorage.setItem('categoryTypeItems', JSON.stringify(response?.data));
-                if (response && response.data) {
-                    const ticketCategoriesList = response.data.map(({ title, categoryId }: any) => ({
-                        title,
-                        categoryId
-                    }));
-                    setTicketCategories(ticketCategoriesList);
-                }
-            } catch (error: any) {
-                toast.error("something failed, please try later");
-            }
-        };
-        handleGetCategoryTypes();
+        if (!hasFetched.current) {
+            handleGetCategoryTypes();
+            hasFetched.current = true;
+        }
     }, [localStorage.getItem('isGoogleUser')]);
+    const handleGetCategoryTypes = useCallback(async () => {
+        try {
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/auth/getticketcategorytypes`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const store = localStorage.setItem('categoryTypeItems', JSON.stringify(response?.data));
+            if (response && response.data) {
+                const ticketCategoriesList = response.data.map(({ title, categoryId }: any) => ({
+                    title,
+                    categoryId
+                }));
+                setTicketCategories(ticketCategoriesList);
+            }
+        } catch (error: any) {
+            toast.error("something failed, please try later");
+        }
+    }, []);
     const navigate = useNavigate();
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);

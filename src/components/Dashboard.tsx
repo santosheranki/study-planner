@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Headercomponent from './Header';
 import '../../src/components/Dashboard.css';
 import CategoriesComponent from './Categories';
@@ -15,40 +15,17 @@ const DashboardComponent = () => {
     const [closedscheduledtasks, setClosedScheduledTasks] = useState(0);
     const [todaysTasksCount, setTodaysTasksCount] = useState(0);
     const [loading, setLoading] = useState(true);
+    const hasFetched = useRef(false);
+    const hasMaintained = useRef(false);
     useEffect(() => {
-        const fetchCategoryCount = async () => {
-            try {
-                const uuidfromlocalstorage = localStorage.getItem('userid');
-                const accessToken = localStorage.getItem('accessToken');
-                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                if (response.data && response.data.categoriescount !== undefined) {
-                    setCategoriesCount(response.data.categoriescount);
-                    setScheduledTasksCount(response.data.scheduledtaskscount);
-                    setClosedScheduledTasks(response.data.closedscheduledtasks);
-                }
-            } catch (error: any) {
-                console.error('Error fetching categories count:', error);
-                if (error.response && error.response.status === 403) {
-                    await refreshAccessToken();
-                }
-            }
-        };
-        const getscheduledcalendar = async () => {
-            try {
-                const accessToken = localStorage.getItem('accessToken');
-                const uuidfromlocalstorage = localStorage.getItem('userid');
-                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${uuidfromlocalstorage}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
-                });
-                const today = new Date().toISOString().split('T')[0];
-                const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
-                setTodaysTasksCount(todayTasks.length);
-            } catch (error: any) {
-                console.error("Error fetching Active Calendars", error.message);
-            }
-        };
+        if (!hasFetched.current) {
+            fetchCategoryCount();
+            hasFetched.current = true;
+        }
+        if (!hasMaintained.current) {
+            getscheduledcalendar();
+            hasMaintained.current = true;
+        }
         // const getallscheduledcalendarstilldate = async () => {
         //     const userid = localStorage.getItem("userid");
         //     try {
@@ -61,11 +38,43 @@ const DashboardComponent = () => {
         // }
         const loadData = async () => {
             setLoading(true);
-            await Promise.all([fetchCategoryCount(), getscheduledcalendar(),
-            ]);
+            await Promise.all([]);
             setLoading(false);
         };
         loadData();
+    }, []);
+    const fetchCategoryCount = useCallback(async () => {
+        try {
+            const uuidfromlocalstorage = localStorage.getItem('userid');
+            const accessToken = localStorage.getItem('accessToken');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getcount/${uuidfromlocalstorage}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (response.data && response.data.categoriescount !== undefined) {
+                setCategoriesCount(response.data.categoriescount);
+                setScheduledTasksCount(response.data.scheduledtaskscount);
+                setClosedScheduledTasks(response.data.closedscheduledtasks);
+            }
+        } catch (error: any) {
+            console.error('Error fetching categories count:', error);
+            if (error.response && error.response.status === 403) {
+                await refreshAccessToken();
+            }
+        }
+    }, []);
+    const getscheduledcalendar = useCallback(async () => {
+        try {
+            const accessToken = localStorage.getItem('accessToken');
+            const uuidfromlocalstorage = localStorage.getItem('userid');
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/calendar/getscheduledcalendar/${uuidfromlocalstorage}`, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            const today = new Date().toISOString().split('T')[0];
+            const todayTasks = response.data.filter((task: any) => task.start.split('T')[0] === today);
+            setTodaysTasksCount(todayTasks.length);
+        } catch (error: any) {
+            console.error("Error fetching Active Calendars", error.message);
+        }
     }, []);
     const handleCategories = () => {
         navigate('/categories');

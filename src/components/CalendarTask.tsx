@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -68,11 +68,19 @@ const CalendarComponent: React.FC = () => {
             setShowModal(false);
         }
     };
+    const hasFetched = useRef(false);
+    const hasMaintained = useRef(false);
     useEffect(() => {
-        handleGetCategoryTypes();
-        fetchScheduledEvents();
+        if (!hasFetched.current) {
+            handleGetCategoryTypes();
+            hasFetched.current = true;
+        }
+        if (!hasMaintained.current) {
+            fetchScheduledEvents();
+            hasMaintained.current = true;
+        }
     }, []);
-    const handleGetCategoryTypes = async () => {
+    const handleGetCategoryTypes = useCallback(async () => {
         const userid = localStorage.getItem('userid');
         const payload = {
             uuid: userid
@@ -90,8 +98,8 @@ const CalendarComponent: React.FC = () => {
         } catch (error: any) {
             console.error('Error fetching categories:', error.response);
         }
-    };
-    const fetchScheduledEvents = async () => {
+    }, []);
+    const fetchScheduledEvents = useCallback(async () => {
         const userid = localStorage.getItem('userid');
         try {
             const accessToken = localStorage.getItem('accessToken');
@@ -116,7 +124,7 @@ const CalendarComponent: React.FC = () => {
             console.error('Error fetching scheduled events:', error);
             setEventsData([]);
         }
-    };
+    }, []);
     const handleSave = async (values: any) => {
         const userid = localStorage.getItem('userid');
         const payload = {
