@@ -14,6 +14,7 @@ import ResetPassword from './components/resetPassword';
 import { useEffect } from 'react';
 import { gapi } from 'gapi-script'
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ViewTicketsComponent from './components/viewTickets';
 function App() {
   const clientId = '69248608745-0poa11g316s9c5af125l1p512bkdob1p.apps.googleusercontent.com';
   useEffect(() => {
@@ -45,6 +46,7 @@ function App() {
             <Route path="/categories" element={<CategoriesComponent />} />
             <Route path="/task" element={<CalendarComponent />} />
             <Route path="/accountsettings" element={<AccountSetting />} />
+            <Route path="/viewtickets" element={<ViewTicketsComponent />} />
           </Route>
 
           {/* Fallback Route for 404 Not Found */}
