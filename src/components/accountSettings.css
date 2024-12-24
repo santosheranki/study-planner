@@ -56,3 +56,7 @@ hr {
     color: #fff !important;
     background-color: #775ad6 !important;
 }
+
+.asterisk {
+    color: red;
+}

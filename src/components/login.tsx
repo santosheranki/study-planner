@@ -35,6 +35,9 @@ const Login: React.FC = () => {
             if (response?.data?.result === 1) {
                 localStorage.setItem('isGoogleUser', 'false');
                 localStorage.setItem('username', response?.data?.username);
+                if (response?.data?.username === 'santosherankicse90@gmail.com') {
+                    localStorage.setItem('adminUser', 'true');
+                }
                 localStorage.setItem('accessToken', response?.data?.accessToken);
                 localStorage.setItem('refreshToken', response?.data?.refreshToken);
                 navigate('/dashboard');

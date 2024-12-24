@@ -16,7 +16,14 @@ const validationSchema = Yup.object().shape({
         .matches(emailPattern, 'Invalid email format')
         .required('Username is required'),
 });
-
+const raiseTicketValidationSchema = Yup.object().shape({
+    username: Yup.string()
+        .matches(emailPattern, 'Invalid email format')
+        .required('Username is required'),
+    title: Yup.string().required('Ticket title is required'),
+    description: Yup.string().required('Ticket description is required'),
+    ticketType: Yup.string().required('Ticket type is required'), // Validation for ticketType dropdown
+});
 const changePasswordSchema = Yup.object().shape({
     username: Yup.string()
         .matches(emailPattern, 'Invalid email format')
@@ -35,14 +42,38 @@ const changePasswordSchema = Yup.object().shape({
         .required('Confirm Password is required'),
 });
 const AccountSetting: React.FC = () => {
+    const [ticketCategories, setTicketCategories] = useState<any[]>([]);
     const [isGoogleUser, setIsGoogleUser] = useState(localStorage.getItem('isGoogleUser') === 'true');
     useEffect(() => {
         setIsGoogleUser(localStorage.getItem('isGoogleUser') === 'true');
+        const handleGetCategoryTypes = async () => {
+            try {
+                const accessToken = localStorage.getItem('accessToken');
+                const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/auth/getticketcategorytypes`, {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                });
+                const store = localStorage.setItem('categoryTypeItems', JSON.stringify(response?.data));
+                if (response && response.data) {
+                    const ticketCategoriesList = response.data.map(({ title, categoryId }: any) => ({
+                        title,
+                        categoryId
+                    }));
+                    setTicketCategories(ticketCategoriesList);
+                }
+            } catch (error: any) {
+                toast.error("something failed, please try later");
+            }
+        };
+        handleGetCategoryTypes();
     }, [localStorage.getItem('isGoogleUser')]);
     const navigate = useNavigate();
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] = useState(false);
+    const [isRaiseTicketModalVisible, setIsRaiseTicketModalVisible] = useState(false);
     const accessToken = localStorage.getItem('accessToken');
+    const handleViewTicketsPage = () => {
+        navigate('/viewtickets');
+    }
     const handleDelete = async (values: { username: string }) => {
         const isGoogleUser = localStorage.getItem('isGoogleUser') === 'true';
         const userId = isGoogleUser ? localStorage.getItem('googleId') : localStorage.getItem('userid')
@@ -76,6 +107,39 @@ const AccountSetting: React.FC = () => {
             }
         }
     };
+    const handleRaiseTicket = async (values: any) => {
+        const isGoogleUser = localStorage.getItem('isGoogleUser') === 'true';
+        const userId = isGoogleUser ? localStorage.getItem('googleId') : localStorage.getItem('userid')
+        let payload: any = {
+            title: values?.title,
+            isGoogleUser: localStorage.getItem('isGoogleUser') === 'true',  // This will directly convert to true or false
+            username: values?.username,
+            categoryId: parseInt(values?.ticketType),
+            description: values?.description
+        }
+        if (isGoogleUser) {
+            payload.googleId = userId;
+        } else {
+            payload.uuid = userId;
+        }
+        try {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/auth/raiseticket`, payload, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            if (response.data?.result === 1) {
+                toast.success("Ticket Raised Successfully");
+                setIsRaiseTicketModalVisible(false);
+            }
+        } catch (error: any) {
+            console.log(error);
+            if (error.response?.status === 400 && error?.response?.data?.message === 'User not found') {
+                toast.error("User not found");
+            }
+            if (error?.response?.status === 400 && error?.response?.data?.message === 'There is already a request with the same category. Please wait for a response.') {
+                toast.error("There is already a request with the same category. Please wait for a response.");
+            }
+        }
+    }
     const handleChangePassword = async (values: { username: string, oldPassword: string, newPassword: string, confirmPassword: string }, { setFieldValue }: any) => {
         const payload = {
             username: values.username,
@@ -139,6 +203,24 @@ const AccountSetting: React.FC = () => {
                         </Button>
                     </div>
                 )}
+                <div className="cardma mb-4" style={{ maxWidth: '500px' }}>
+                    <h5>Help & Support</h5>
+                    <p>
+                        Please raise a ticket, we are happy to solve as soon as we can!
+                    </p>
+                    <Button
+                        onClick={() => setIsRaiseTicketModalVisible(true)}
+                        className="w-10 changingpassword"
+                    >
+                        Raise a Ticket
+                    </Button>
+                    <Button
+                        onClick={() => handleViewTicketsPage()}
+                        className="w-10 mx-2 changingpassword"
+                    >
+                        View Tickets
+                    </Button>
+                </div>
                 <div className="text-danger mb-3">
                     <h5>Danger Zone</h5>
                     <p>
@@ -275,6 +357,91 @@ const AccountSetting: React.FC = () => {
                                             className="d-block mx-auto changingpassword"
                                         >
                                             Update Password
+                                        </Button>
+                                    </div>
+                                </FormikForm>
+                            )}
+                        </Formik>
+                    </Modal.Body>
+                </Modal>
+                <Modal show={isRaiseTicketModalVisible} onHide={() => setIsRaiseTicketModalVisible(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Raise A Ticket</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Formik
+                            initialValues={{ username: '', description: '', title: '', ticketType: '' }}
+                            validationSchema={raiseTicketValidationSchema}
+                            onSubmit={handleRaiseTicket}
+                        >
+                            {({ errors, values, handleChange, setTouched, touched, isInvalid }: any) => (
+                                <FormikForm>
+                                    <Form.Group controlId="formUsername">
+                                        <Form.Label>Username <span className="asterisk">*</span></Form.Label>
+                                        <Field
+                                            type="text"
+                                            name="username"
+                                            placeholder="Enter Username at the time of creation"
+                                            className="form-control"
+                                            onCopy={(e: any) => e.preventDefault()}
+                                            onPaste={(e: any) => e.preventDefault()}
+                                            onCut={(e: any) => e.preventDefault()}
+                                            onContextMenu={(e: any) => e.preventDefault()}
+                                            onBlur={() => setTouched({ username: true })}
+                                        />
+                                        <ErrorMessage name="username" component="div" className="text-danger" />
+                                    </Form.Group>
+
+                                    <Form.Group>
+                                        <Form.Label>Ticket Title <span className="asterisk">*</span></Form.Label>
+                                        <Field
+                                            name="title"
+                                            as={Form.Control}
+                                            isInvalid={touched.title && !!errors.title}
+                                            placeholder="Enter Title"
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.title}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.Label>Type of Ticket <span className="asterisk">*</span></Form.Label>
+                                        <Field
+                                            as="select"
+                                            name="ticketType"
+                                            className="form-control"
+                                            isInvalid={touched.ticketType && !!errors.ticketType}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="">Select Ticket Type</option>
+                                            {ticketCategories.map((category) => (
+                                                <option key={category.categoryId} value={category.categoryId}>
+                                                    {category.title}
+                                                </option>
+                                            ))}
+                                        </Field>
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.ticketType}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.Label>Description<span className='asterisk'>*</span></Form.Label>
+                                        <Field
+                                            name="description"
+                                            as="textarea"
+                                            placeholder="Describe your issue elaborately here"
+                                            className="form-control"
+                                            rows={3}
+                                            isInvalid={touched.description && !!errors.description}
+                                        />
+                                        <Form.Control.Feedback type="invalid">
+                                            {errors.description}
+                                        </Form.Control.Feedback>
+                                    </Form.Group>
+
+                                    <div className="handlebutton">
+                                        <Button type="submit" className="d-block mx-auto">
+                                            Raise
                                         </Button>
                                     </div>
                                 </FormikForm>
