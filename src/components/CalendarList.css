@@ -81,3 +81,26 @@ select {
     background-color: rgba(255, 255, 255, 0.8);
     z-index: 9999;
 }
+
+th {
+    cursor: pointer;
+    user-select: none;
+}
+
+th span {
+    margin-left: 5px;
+    font-size: 12px;
+}
+
+.table-container {
+    margin-top: 20px;
+}
+
+.page-button {
+    margin: 5px;
+}
+
+.page-button.active {
+    background-color: #007bff;
+    color: white;
+}
