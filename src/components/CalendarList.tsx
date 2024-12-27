@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 const DashboardListComponent = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [sortBy, setSortBy] = useState('ActiveFlag');
     const [currentPage, setCurrentPage] = useState(1);
     const [recordsPerPage, setRecordsPerPage] = useState(5);
     const hasFetched = useRef(false);
@@ -15,6 +17,21 @@ const DashboardListComponent = () => {
             hasFetched.current = true;
         }
     }, []);
+    const sortedEvents = [...events].sort((a: any, b: any) => {
+        if (sortBy === 'ActiveFlag') {
+            const order = sortOrder === 'asc' ? 1 : -1;
+            return (a.ActiveFlag - b.ActiveFlag) * order;
+        }
+        return 0;
+    });
+    const handleSort = () => {
+        if (sortBy === 'ActiveFlag') {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy('ActiveFlag');
+            setSortOrder('desc');
+        }
+    };
     const fetchEvents = useCallback(async () => {
         try {
             const uuidfromlocalstorage = localStorage.getItem('userid');
@@ -74,16 +91,25 @@ const DashboardListComponent = () => {
                                     <th>Description</th>
                                     <th>Start</th>
                                     <th>End</th>
-                                    <th>Status</th>
+                                    <th>Completed Time</th>
+                                    <th onClick={handleSort} style={{ cursor: 'pointer' }}>
+                                        Status
+                                        {sortBy === 'ActiveFlag' && (
+                                            <span>
+                                                {sortOrder === 'asc' ? ' ↑' : ' ↓'}
+                                            </span>
+                                        )}
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {currentRecords.map((event: any) => (
+                                {sortedEvents.map((event: any) => (
                                     <tr key={event._id}>
                                         <td>{event.title}</td>
                                         <td>{event.description}</td>
                                         <td>{format(new Date(event.start), 'PPPpp')}</td>
                                         <td>{format(new Date(event.end), 'PPPpp')}</td>
+                                        <td>{event.completedTime ? format(new Date(event.completedTime), 'PPPpp') : 'N/A'}</td>
                                         <td>
                                             <span style={{ color: getStatusColor(event.ActiveFlag) }}>
                                                 {event.ActiveFlag === 1 ? 'Active' : 'Completed'}

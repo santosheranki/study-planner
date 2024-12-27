@@ -198,7 +198,8 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
     const handleDelete = async () => {
         const payload = {
             uuid: localStorage.getItem('userid')?.toString(),
-            calendarId: individualcard.calendarId,
+            completedTime: new Date().toISOString(),
+            calendarId: individualcard?.calendarId,
         };
         try {
             const deletecall = await axios.post(`${process.env.REACT_APP_API_URL}/calendar/updateActiveFlag`, payload);
