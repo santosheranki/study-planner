@@ -6,7 +6,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../src/components/accountSettings.css';
 import Headercomponent from './Header';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 
@@ -44,6 +43,7 @@ const changePasswordSchema = Yup.object().shape({
 const AccountSetting: React.FC = () => {
     const [ticketCategories, setTicketCategories] = useState<any[]>([]);
     const [isGoogleUser, setIsGoogleUser] = useState(localStorage.getItem('isGoogleUser') === 'true');
+    const checkAdminUser = localStorage.getItem('adminUser') === 'true';
     const hasFetched = useRef(false);
     useEffect(() => {
         setIsGoogleUser(localStorage.getItem('isGoogleUser') === 'true');
@@ -58,8 +58,8 @@ const AccountSetting: React.FC = () => {
             const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/auth/getticketcategorytypes`, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
-            const store = localStorage.setItem('categoryTypeItems', JSON.stringify(response?.data));
             if (response && response.data) {
+                localStorage.setItem('categoryTypeItems', JSON.stringify(response?.data));
                 const ticketCategoriesList = response.data.map(({ title, categoryId }: any) => ({
                     title,
                     categoryId
@@ -191,6 +191,11 @@ const AccountSetting: React.FC = () => {
                 <h2 className="mb-3">Account Settings</h2>
                 <hr />
                 <p>Your details</p>
+                {checkAdminUser ? (
+                    <p>Role: Admin</p>
+                ) : (
+                    <p>Role: User</p>
+                )}
                 <p>Display Name : {localStorage.getItem('userwelcomename')}</p>
                 <p>Username : {localStorage.getItem('username')}</p>
                 {!isGoogleUser && (
@@ -210,7 +215,7 @@ const AccountSetting: React.FC = () => {
                 <div className="cardma mb-4" style={{ maxWidth: '500px' }}>
                     <h5>Help & Support</h5>
                     <p>
-                        Please raise a ticket, we are happy to solve as soon as we can!
+                        Found an issue? Please raise a ticket, and we’ll resolve it promptly!
                     </p>
                     <Button
                         onClick={() => setIsRaiseTicketModalVisible(true)}
