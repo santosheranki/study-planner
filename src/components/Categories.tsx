@@ -81,7 +81,12 @@ const CategoriesComponent = () => {
             toast.success("Category Deleted successfully");
             handleGetCategories();
         } catch (error: any) {
-            toast.error("Error deleting category");
+            if (error.response?.status === 400 && error?.response?.data?.message === 'Cannot delete category because it is still associated with an active calendar') {
+                toast.error('Cannot delete category because it is still associated with an active calendar');
+            }
+            else {
+                toast.error(error?.response?.data?.message);
+            }
         }
     };
     const indexOfLastItem = currentPage * recordsPerPage;
