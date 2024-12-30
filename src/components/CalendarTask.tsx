@@ -230,7 +230,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                 if (!start || !value) return true;
                 return value.getTime() !== start.getTime();
             }),
-        category: Yup.string().required('Category is required'),
+        category: Yup.number().required('Category is required'),
         description: Yup.string()
     });
     return (
@@ -247,7 +247,7 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                     resetForm();
                 }}
             >
-                {({ errors, touched }: any) => (
+                {({ errors, touched, setFieldValue, setFieldTouched }: any) => (
                     <FormikForm>
                         <Modal.Body>
                             <Form.Group>
@@ -264,15 +264,20 @@ const EventModal = ({ show, handleClose, handleSave, newEvent, categories, indiv
                                 <Field
                                     name="category"
                                     as="select"
-                                    className="form-control"
-                                    isInvalid={touched.category && !!errors.category}
+                                    className={`form-control ${touched.category && errors.category ? 'is-invalid' : ''}`}
+                                    onBlur={() => setFieldTouched('category', true)}
+                                    onChange={(e: any) => setFieldValue('category', e.target.value)}
                                 >
-                                    <option value="" label="Select category" />
-                                    {categories.map((category: any, index: any) => (
-                                        <option key={index} value={category.categoryid} label={category.title} />
+                                    <option value="">Select Category</option>
+                                    {categories.map((category: any) => (
+                                        <option key={category.categoryid} value={category.categoryid}>
+                                            {category.title}
+                                        </option>
                                     ))}
                                 </Field>
-                                <Form.Control.Feedback type="invalid">{errors.category}</Form.Control.Feedback>
+                                <Form.Control.Feedback type="invalid">
+                                    {errors.category}
+                                </Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group>
                                 <Form.Label>Start Date & Time <span className='asterisk'>*</span></Form.Label>
