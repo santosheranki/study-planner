@@ -214,7 +214,7 @@ const AccountSetting: React.FC = () => {
                 )}
                 <div className="cardma mb-4" style={{ maxWidth: '500px' }}>
                     <h5>Help & Support</h5>
-                    <p>
+                    <p className='text-muted'>
                         Found an issue? Please raise a ticket, and we’ll resolve it promptly!
                     </p>
                     <Button
@@ -447,7 +447,9 @@ const AccountSetting: React.FC = () => {
                                             {errors.description}
                                         </Form.Control.Feedback>
                                     </Form.Group>
-
+                                    <label className="colorlight2">
+                                        <span className='text-darker-danger'>*</span> Please do not provide any personal information, passwords, or sensitive details.
+                                    </label>
                                     <div className="handlebutton">
                                         <Button type="submit" className="d-block mx-auto">
                                             Raise
