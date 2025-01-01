@@ -13,6 +13,7 @@ const ViewTicketsComponent = () => {
     const [loading, setLoading] = useState(true);
     const [recordsPerPage, setRecordsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const indexOfLastItem = currentPage * recordsPerPage;
     const indexOfFirstItem = indexOfLastItem - recordsPerPage;
     const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
@@ -74,7 +75,6 @@ const ViewTicketsComponent = () => {
     }, []);
     const isAdminUser = localStorage.getItem('adminUser') === 'true';
     const handleMarkAsClose = async (_id: string, username: string) => {
-        const isAdminUser = localStorage.getItem('adminUser') === 'true';
         const payload = {
             _id,
             username,
@@ -100,7 +100,18 @@ const ViewTicketsComponent = () => {
             }
         }
     };
-
+    const handleSort = () => {
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    };
+    const sortedItems = [...items].sort((a, b) => {
+        if (a.activeFlag === b.activeFlag) return 0;
+        if (sortOrder === 'asc') {
+            return a.activeFlag === 1 ? -1 : 1;
+        } else {
+            return a.activeFlag === 1 ? 1 : -1;
+        }
+    });
+    const currentSortedItems = sortedItems.slice(indexOfFirstItem, indexOfLastItem);
 
     return (
         <>
@@ -124,7 +135,10 @@ const ViewTicketsComponent = () => {
                             <th>Category Name</th>
                             <th>Title</th>
                             <th>Reason</th>
-                            <th>Status</th>
+                            <th onClick={handleSort} style={{ cursor: 'pointer' }}>
+                                Status
+                                {sortOrder === 'asc' ? ' ↑' : ' ↓'}
+                            </th>
                             {isAdminUser && <th>Action</th>} {/* Conditionally show Action column */}
                         </tr>
                     </thead>
@@ -139,7 +153,7 @@ const ViewTicketsComponent = () => {
                                 </tr>
                             ))
                         ) : (
-                            currentItems.map(item => {
+                            currentSortedItems.map(item => {
                                 const categoryTypeItems = JSON.parse(localStorage.getItem('categoryTypeItems') || '[]');
                                 const category = categoryTypeItems.find((cat: any) => cat.categoryId === item.categoryId);
                                 const categoryName = category ? category.title : 'Unknown Category';
