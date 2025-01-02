@@ -37,7 +37,7 @@ const CategoriesComponent = () => {
             const payload = {
                 uuid: localStorage.getItem('userid')
             }
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/category/getcategories`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             const tableCategories = response.data.map(({ categoryid, title, reason, activeFlag }: any) => ({
@@ -63,7 +63,7 @@ const CategoriesComponent = () => {
             categoryid: category.categoryid
         }
         const accessToken = localStorage.getItem('accessToken');
-        const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategoriesbyid`, payload, {
+        const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/category/getcategoriesbyid`, payload, {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
     };
@@ -75,7 +75,7 @@ const CategoriesComponent = () => {
         }
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/deletecategory`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/category/deletecategory`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             toast.success("Category Deleted successfully");
@@ -120,7 +120,7 @@ const CategoriesComponent = () => {
             categoryid: selectedCategory ? selectedCategory.categoryid : undefined, // Include categoryid if selectedCategory exists
         };
         try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/addcategories`, payload);
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/category/addcategories`, payload);
             if (response.data.result === 1) {
                 toast.success(selectedCategory ? "Category Updated Successfully" : "Category Added Successfully");
             }
