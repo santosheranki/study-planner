@@ -55,7 +55,7 @@ const AccountSetting: React.FC = () => {
     const handleGetCategoryTypes = useCallback(async () => {
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/auth/getticketcategorytypes`, {
+            const response = await axiosInstance.get(`${process.env.REACT_APP_API_URL}/tickets/getticketcategorytypes`, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (response && response.data) {
@@ -127,7 +127,7 @@ const AccountSetting: React.FC = () => {
             payload.uuid = userId;
         }
         try {
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/auth/raiseticket`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/tickets/raiseticket`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (response.data?.result === 1) {
