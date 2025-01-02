@@ -87,7 +87,7 @@ const CalendarComponent: React.FC = () => {
         }
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/calendar/getcategories`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/category/getcategories`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
             if (response && response.data) {
