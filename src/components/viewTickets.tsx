@@ -49,7 +49,7 @@ const ViewTicketsComponent = () => {
         }
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/auth/GetTicketsById`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/tickets/GetTicketsById`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
 
@@ -82,7 +82,7 @@ const ViewTicketsComponent = () => {
         };
         try {
             const accessToken = localStorage.getItem('accessToken');
-            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/auth/markasclose`, payload, {
+            const response = await axiosInstance.post(`${process.env.REACT_APP_API_URL}/tickets/markasclose`, payload, {
                 headers: { Authorization: `Bearer ${accessToken}` }
             });
 
