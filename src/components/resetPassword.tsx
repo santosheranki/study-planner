@@ -83,6 +83,7 @@ const ResetPassword: React.FC = () => {
         <div className="reset-password-container">
             <div className="card-reset">
                 <h2>Reset Password</h2>
+                <p className='text-start'>Username : {username}</p>
                 <input
                     type="password"
                     placeholder="New Password"
