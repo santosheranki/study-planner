@@ -43,8 +43,9 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "CI=false react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
+    "postbuild": "cp ./routes.json ./build/routes.json",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
